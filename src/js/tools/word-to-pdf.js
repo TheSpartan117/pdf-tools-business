@@ -11,7 +11,98 @@ export function initWordToPdfTool(container) {
   const content = document.createElement('div')
   content.className = 'max-w-4xl mx-auto'
 
-  // TODO: Add UI sections
+  // Warning banner
+  const warningBanner = document.createElement('div')
+  warningBanner.className = 'bg-blue-50 border-l-4 border-blue-400 p-4 mb-6'
+  warningBanner.innerHTML = `
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-blue-800">Conversion Information</h3>
+        <div class="mt-2 text-sm text-blue-700">
+          <ul class="list-disc list-inside space-y-1">
+            <li>Basic formatting (bold, italic, headings) will be preserved</li>
+            <li>Images will be included in the PDF</li>
+            <li>Complex layouts may be simplified</li>
+            <li>Fonts may differ from the original document</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  `
+  content.appendChild(warningBanner)
+
+  // Upload section
+  const uploadSection = createUploadZone({
+    id: 'word-upload',
+    accept: '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    title: 'Upload Word Document',
+    subtitle: 'Drop a .docx file here or click to browse',
+    icon: `<svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>`,
+    onFileSelect: (file) => handleFileUpload(file, uploadSection, container)
+  })
+  content.appendChild(uploadSection)
+
+  // Action buttons
+  const actionButtons = document.createElement('div')
+  actionButtons.id = 'action-buttons-word-to-pdf'
+  actionButtons.className = 'hidden mt-6 flex gap-4 justify-center'
+  actionButtons.innerHTML = `
+    <button id="convert-to-pdf-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+      Convert to PDF
+    </button>
+    <button id="clear-word-to-pdf-btn" class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium">
+      Clear
+    </button>
+  `
+  content.appendChild(actionButtons)
+
+  // Event listeners
+  const convertBtn = actionButtons.querySelector('#convert-to-pdf-btn')
+  const clearBtn = actionButtons.querySelector('#clear-word-to-pdf-btn')
+
+  convertBtn.addEventListener('click', () => {
+    if (uploadedFile) {
+      convertWordToPdf(uploadedFile, container, uploadedFileName)
+    }
+  })
+
+  clearBtn.addEventListener('click', () => {
+    uploadedFile = null
+    uploadedFileName = ''
+    actionButtons.classList.add('hidden')
+
+    // Reset upload zone
+    const fileInput = uploadSection.querySelector('input[type="file"]')
+    if (fileInput) {
+      fileInput.value = ''
+    }
+
+    const uploadArea = uploadSection.querySelector('[data-upload-area]')
+    if (uploadArea) {
+      uploadArea.className = 'mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400 transition-colors cursor-pointer'
+    }
+
+    const uploadContent = uploadSection.querySelector('[data-upload-content]')
+    if (uploadContent) {
+      uploadContent.innerHTML = `
+        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <p class="mt-2 text-sm text-gray-600">Drop a .docx file here or click to browse</p>
+      `
+    }
+  })
+
+  function handleFileUpload(file, uploadSection, container) {
+    console.log('handleFileUpload called with:', file.name)
+  }
 
   container.appendChild(content)
 }
