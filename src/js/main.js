@@ -112,6 +112,11 @@ function showToolPage(params) {
         module.initPdfToImagesTool(contentContainer)
       })
       break
+    case 'images-to-pdf':
+      import('./tools/images-to-pdf.js').then(module => {
+        module.initImagesToPdfTool(contentContainer)
+      })
+      break
     default:
       contentContainer.innerHTML = `
         <div class="text-center text-gray-600">
