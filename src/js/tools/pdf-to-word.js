@@ -278,8 +278,11 @@ async function convertWithMuPDF(file, container, fileName) {
     }
 
     // Check if any text was found
+    console.error('DEBUG: Checking total blocks...')
     const totalBlocks = allPagesData.reduce((sum, page) => sum + page.blocks.length, 0)
+    console.error('DEBUG: Total blocks:', totalBlocks)
     if (totalBlocks === 0) {
+      console.error('DEBUG: No blocks found, showing error')
       hideLoading()
       showError(
         'This PDF does not contain selectable text. It appears to be a scanned document. Please use the OCR tool first.',
@@ -289,8 +292,10 @@ async function convertWithMuPDF(file, container, fileName) {
     }
 
     // Process structured text into formatted content
+    console.error('DEBUG: Processing structured text blocks...')
     showLoading(container, 'Analyzing document structure...')
     const processedContent = processStructuredTextBlocks(allPagesData)
+    console.error('DEBUG: Processed content items:', processedContent.length)
 
     // Extract images using PDF.js fallback
     showLoading(container, 'Extracting images...')
