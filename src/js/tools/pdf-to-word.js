@@ -344,11 +344,24 @@ async function convertPdfToWord(file, container, fileName) {
     return
   }
 
-  // Check WebAssembly support
+  // Check WebAssembly and MuPDF support
   const wasmSupported = await isWasmSupported()
+
   if (!wasmSupported) {
-    console.warn('MuPDF not available, using PDF.js fallback')
-    // Fall through to PDF.js conversion
+    console.warn('MuPDF not available, using PDF.js fallback directly')
+    // Use PDF.js directly
+    try {
+      await convertWithPdfJs(file, container, fileName)
+      // Add info banner about basic mode
+      const infoDiv = document.createElement('div')
+      infoDiv.className = 'mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800'
+      infoDiv.textContent = 'Used basic conversion mode. For better formatting, please use a modern browser (Chrome, Firefox, Safari, or Edge).'
+      container.appendChild(infoDiv)
+    } catch (error) {
+      hideLoading()
+      showError(`Conversion failed: ${error.message}`, container)
+    }
+    return
   }
 
   // Try MuPDF first, fallback to PDF.js if it fails
