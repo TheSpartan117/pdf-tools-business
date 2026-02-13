@@ -196,12 +196,13 @@ export function initPdfToWordTool(container) {
 async function convertWithMuPDF(file, container, fileName) {
   showLoading(container, 'Loading PDF with advanced parser...')
 
+  let mupdfDoc = null
   try {
     // Read file as ArrayBuffer
     const arrayBuffer = await readFileAsArrayBuffer(file)
 
     // Load PDF with MuPDF
-    const mupdfDoc = await loadPdfWithMuPDF(arrayBuffer)
+    mupdfDoc = await loadPdfWithMuPDF(arrayBuffer)
     const pageCount = mupdfDoc.countPages()
 
     // Extract structured text from all pages
@@ -214,6 +215,15 @@ async function convertWithMuPDF(file, container, fileName) {
       const page = mupdfDoc.loadPage(i)
       const pageData = extractStructuredText(page, i + 1)
       allPagesData.push(pageData)
+
+      // Clean up page after extraction
+      if (page && typeof page.destroy === 'function') {
+        try {
+          page.destroy()
+        } catch (pageCleanupError) {
+          console.warn(`Page ${i + 1} cleanup error:`, pageCleanupError)
+        }
+      }
     }
 
     // Check if any text was found
@@ -245,9 +255,6 @@ async function convertWithMuPDF(file, container, fileName) {
     showLoading(container, 'Generating file...')
     const blob = await generateDocxBlob(doc)
 
-    // Clean up MuPDF resources
-    mupdfDoc.destroy()
-
     // Hide loading BEFORE download
     hideLoading()
 
@@ -271,6 +278,15 @@ async function convertWithMuPDF(file, container, fileName) {
     hideLoading()
     console.error('MuPDF conversion error:', error)
     throw error // Re-throw to be caught by fallback handler
+  } finally {
+    // Always cleanup MuPDF resources
+    if (mupdfDoc) {
+      try {
+        mupdfDoc.destroy()
+      } catch (cleanupError) {
+        console.warn('MuPDF cleanup error:', cleanupError)
+      }
+    }
   }
 }
 
@@ -311,7 +327,10 @@ async function convertPdfToWord(file, container, fileName) {
       container.appendChild(warningDiv)
     } catch (fallbackError) {
       hideLoading()
-      console.error('Both conversion methods failed:', fallbackError)
+      console.error('Both conversion methods failed:', {
+        mupdfError: mupdfError.message,
+        fallbackError: fallbackError.message
+      })
       showError(
         'Failed to convert PDF to Word. Please ensure the file is a valid PDF document.',
         container
