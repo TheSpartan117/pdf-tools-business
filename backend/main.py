@@ -39,6 +39,7 @@ app.add_middleware(
         "http://localhost:3001",
         "http://localhost:3002",
         "http://localhost:5173",
+        "https://pdf-tools-business.vercel.app",
         "https://*.vercel.app",
         "https://*.netlify.app",
         # Add your production domain here
