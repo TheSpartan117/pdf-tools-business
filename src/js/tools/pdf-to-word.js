@@ -301,3 +301,77 @@ async function extractImagesFromPage(page) {
     return []
   }
 }
+
+/**
+ * Build Word document from extracted page data
+ * @param {Array} pagesData - Array of { pageNumber, paragraphs[], images[] }
+ * @returns {Document} - docx Document object
+ */
+async function buildWordDocument(pagesData) {
+  const children = []
+
+  for (const pageData of pagesData) {
+    // Add page heading
+    children.push(
+      new Paragraph({
+        text: `Page ${pageData.pageNumber}`,
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 400, after: 200 }
+      })
+    )
+
+    // Add text paragraphs
+    for (const paragraphText of pageData.paragraphs) {
+      if (paragraphText.trim()) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun(paragraphText)],
+            spacing: { after: 120 }
+          })
+        )
+      }
+    }
+
+    // Add images
+    for (const image of pageData.images) {
+      try {
+        // Convert blob to arrayBuffer for ImageRun
+        const arrayBuffer = await image.blob.arrayBuffer()
+
+        // Scale image if width exceeds 600px
+        let width = image.width
+        let height = image.height
+
+        if (width > 600) {
+          const scale = 600 / width
+          width = 600
+          height = Math.round(height * scale)
+        }
+
+        children.push(
+          new Paragraph({
+            children: [
+              new ImageRun({
+                data: arrayBuffer,
+                transformation: { width, height }
+              })
+            ],
+            spacing: { after: 120 }
+          })
+        )
+      } catch (error) {
+        console.warn('Failed to add image to document:', error)
+        // Continue with other images
+      }
+    }
+  }
+
+  // Create and return document
+  return new Document({
+    sections: [
+      {
+        children
+      }
+    ]
+  })
+}
