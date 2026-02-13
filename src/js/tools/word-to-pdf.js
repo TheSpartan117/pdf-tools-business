@@ -156,6 +156,114 @@ function validateWordFile(file) {
   return hasValidType || hasValidExtension
 }
 
-function convertWordToPdf(file, container, fileName) {
-  console.log('Convert Word to PDF:', fileName)
+async function convertWordToPdf(file, container, fileName) {
+  try {
+    // Step 1: Validate file exists
+    if (!file) {
+      showError(container, 'No file selected')
+      return
+    }
+
+    // Step 2: Show loading "Converting Word to HTML..."
+    showLoading(container, 'Converting Word to HTML...')
+
+    // Step 3: Read file as arrayBuffer
+    const arrayBuffer = await file.arrayBuffer()
+
+    // Step 4: Use mammoth.convertToHtml to get HTML
+    const result = await mammoth.convertToHtml({ arrayBuffer })
+    const html = result.value
+
+    // Step 5: Validate HTML is not empty
+    if (!html || html.trim().length === 0) {
+      hideLoading(container)
+      showError(container, 'Could not extract content from Word document')
+      return
+    }
+
+    // Step 6: Update loading "Rendering to PDF..."
+    showLoading(container, 'Rendering to PDF...')
+
+    // Step 7: Create hidden temp container with A4 dimensions
+    const tempContainer = document.createElement('div')
+    tempContainer.id = 'word-to-pdf-temp-container'
+
+    // Step 8: Set container styles (A4 width with padding)
+    tempContainer.style.position = 'absolute'
+    tempContainer.style.left = '-9999px'
+    tempContainer.style.width = '210mm'
+    tempContainer.style.padding = '20mm'
+    tempContainer.style.fontFamily = 'Arial, sans-serif'
+    tempContainer.style.fontSize = '12pt'
+    tempContainer.style.lineHeight = '1.5'
+    tempContainer.style.backgroundColor = 'white'
+    tempContainer.style.boxSizing = 'border-box'
+
+    // Step 9: Insert HTML into container
+    tempContainer.innerHTML = html
+    document.body.appendChild(tempContainer)
+
+    // Step 10: Wait for images to load
+    const images = tempContainer.querySelectorAll('img')
+    const imagePromises = Array.from(images).map(img => {
+      return new Promise((resolve) => {
+        if (img.complete) {
+          resolve()
+        } else {
+          img.onload = resolve
+          img.onerror = resolve // Resolve even on error to not block the process
+        }
+      })
+    })
+    await Promise.all(imagePromises)
+
+    // Step 11: Create jsPDF instance (portrait, A4)
+    const pdf = new jsPDF('portrait', 'mm', 'a4')
+    const pdfWidth = pdf.internal.pageSize.getWidth()
+    const pdfHeight = pdf.internal.pageSize.getHeight()
+
+    // Step 12: Render container to canvas using html2canvas
+    const canvas = await html2canvas(tempContainer, {
+      scale: 2,
+      useCORS: true,
+      logging: false
+    })
+
+    const imgData = canvas.toDataURL('image/png')
+    const imgWidth = pdfWidth
+    const imgHeight = (canvas.height * pdfWidth) / canvas.width
+
+    // Step 13: Calculate multi-page layout (A4 = 210mm × 297mm)
+    let heightLeft = imgHeight
+    let position = 0
+
+    // Step 14: Add first page to PDF
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+    heightLeft -= pdfHeight
+
+    // Step 15: Loop to add additional pages if content exceeds one page
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight
+      pdf.addPage()
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+      heightLeft -= pdfHeight
+    }
+
+    // Step 16: Clean up: remove temp container
+    document.body.removeChild(tempContainer)
+
+    // Step 17: Download PDF using generateFileName
+    const outputFileName = generateFileName(fileName, 'to-pdf', 'pdf')
+    pdf.save(outputFileName)
+
+    hideLoading(container)
+
+    // Step 18: Show success message
+    showSuccess(container, `Successfully converted to ${outputFileName}`)
+
+  } catch (error) {
+    hideLoading(container)
+    console.error('Error converting Word to PDF:', error)
+    showError(container, `Conversion failed: ${error.message}`)
+  }
 }
