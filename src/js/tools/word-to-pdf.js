@@ -62,43 +62,48 @@ export function initWordToPdfTool(container) {
     </button>
   `
   content.appendChild(actionButtons)
+  container.appendChild(content)
 
-  // Event listeners
-  const convertBtn = actionButtons.querySelector('#convert-to-pdf-btn')
-  const clearBtn = actionButtons.querySelector('#clear-word-to-pdf-btn')
+  // Event listeners - must be after appending to DOM
+  const convertBtn = document.getElementById('convert-to-pdf-btn')
+  const clearBtn = document.getElementById('clear-word-to-pdf-btn')
 
-  convertBtn.addEventListener('click', () => {
-    if (uploadedFile) {
-      convertWordToPdf(uploadedFile, container, uploadedFileName)
-    }
-  })
+  if (convertBtn) {
+    convertBtn.addEventListener('click', () => {
+      if (uploadedFile) {
+        convertWordToPdf(uploadedFile, container, uploadedFileName)
+      }
+    })
+  }
 
-  clearBtn.addEventListener('click', () => {
-    uploadedFile = null
-    uploadedFileName = ''
-    actionButtons.classList.add('hidden')
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      uploadedFile = null
+      uploadedFileName = ''
+      actionButtons.classList.add('hidden')
 
-    // Reset upload zone
-    const fileInput = uploadSection.querySelector('input[type="file"]')
-    if (fileInput) {
-      fileInput.value = ''
-    }
+      // Reset upload zone
+      const fileInput = uploadSection.querySelector('input[type="file"]')
+      if (fileInput) {
+        fileInput.value = ''
+      }
 
-    const uploadArea = uploadSection.querySelector('[data-upload-area]')
-    if (uploadArea) {
-      uploadArea.className = 'mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400 transition-colors cursor-pointer'
-    }
+      const uploadArea = uploadSection.querySelector('[data-upload-area]')
+      if (uploadArea) {
+        uploadArea.className = 'mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400 transition-colors cursor-pointer'
+      }
 
-    const uploadContent = uploadSection.querySelector('[data-upload-content]')
-    if (uploadContent) {
-      uploadContent.innerHTML = `
-        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-        <p class="mt-2 text-sm text-gray-600">Drop a .docx file here or click to browse</p>
-      `
-    }
-  })
+      const uploadContent = uploadSection.querySelector('[data-upload-content]')
+      if (uploadContent) {
+        uploadContent.innerHTML = `
+          <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <p class="mt-2 text-sm text-gray-600">Drop a .docx file here or click to browse</p>
+        `
+      }
+    })
+  }
 
   function handleFileUpload(file, uploadSection, container) {
     // Validate file
@@ -141,8 +146,6 @@ export function initWordToPdfTool(container) {
     // Show action buttons
     actionButtons.classList.remove('hidden')
   }
-
-  container.appendChild(content)
 }
 
 // Stub functions

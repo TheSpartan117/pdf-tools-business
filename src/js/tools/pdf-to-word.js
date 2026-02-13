@@ -82,8 +82,9 @@ export function initPdfToWordTool(container) {
   `
 
   content.appendChild(actionsSection)
+  container.appendChild(content)
 
-  // Event listeners
+  // Event listeners - must be after appending to DOM
   const convertBtn = document.getElementById('convert-to-word-btn')
   const clearBtn = document.getElementById('clear-pdf-to-word-btn')
 
@@ -107,7 +108,7 @@ export function initPdfToWordTool(container) {
     // Validate PDF
     const validation = validatePDF(file)
     if (!validation.valid) {
-      showError(validation.error, uploadSection)
+      showError(validation.errors.join(', '), uploadSection)
       return
     }
 
@@ -165,8 +166,6 @@ export function initPdfToWordTool(container) {
       showError('Failed to load PDF. Please ensure the file is a valid PDF document.', uploadSection)
     }
   }
-
-  container.appendChild(content)
 }
 
 /**
