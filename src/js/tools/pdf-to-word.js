@@ -556,16 +556,21 @@ async function extractImagesFromPage(page) {
         const imageName = argsArray[0]
 
         try {
-          // Get image data from page objects
-          const imageData = await new Promise((resolve, reject) => {
-            page.objs.get(imageName, (img) => {
-              if (img) {
-                resolve(img)
-              } else {
-                reject(new Error('Image not found'))
-              }
-            })
-          })
+          // Get image data from page objects with timeout
+          const imageData = await Promise.race([
+            new Promise((resolve, reject) => {
+              page.objs.get(imageName, (img) => {
+                if (img) {
+                  resolve(img)
+                } else {
+                  reject(new Error('Image not found'))
+                }
+              })
+            }),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Image load timeout')), 5000)
+            )
+          ])
 
           if (imageData && imageData.width && imageData.height) {
             // Create canvas to convert image to PNG blob
