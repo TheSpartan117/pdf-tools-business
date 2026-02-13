@@ -10,8 +10,8 @@ export function showError(message, container) {
   `
   container.prepend(errorDiv)
 
-  // Auto-remove after 5 seconds
-  setTimeout(() => errorDiv.remove(), 5000)
+  // Auto-remove after 30 seconds
+  setTimeout(() => errorDiv.remove(), 30000)
 }
 
 export function showSuccess(message, container) {
@@ -22,8 +22,8 @@ export function showSuccess(message, container) {
   `
   container.prepend(successDiv)
 
-  // Auto-remove after 5 seconds
-  setTimeout(() => successDiv.remove(), 5000)
+  // Auto-remove after 30 seconds
+  setTimeout(() => successDiv.remove(), 30000)
 }
 
 export function showLoading(container, message = 'Processing...') {

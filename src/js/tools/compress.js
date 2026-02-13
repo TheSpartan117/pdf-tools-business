@@ -36,25 +36,25 @@ export function initCompressTool(container) {
   optionsSection.id = 'compress-options'
   optionsSection.className = 'bg-white rounded-lg shadow-md p-8 mb-6 hidden'
   optionsSection.innerHTML = `
-    <h3 class="text-xl font-semibold mb-4">Compression Level</h3>
-    <p class="text-sm text-gray-600 mb-4">Note: Client-side compression is limited. Results may vary.</p>
+    <h3 class="text-xl font-semibold mb-4">Compression Quality</h3>
+    <p class="text-sm text-gray-600 mb-4">Backend compression with image resizing and optimization</p>
     <div class="space-y-4">
       <div>
         <label class="flex items-center">
           <input type="radio" name="compress-level" value="low" class="mr-2">
-          <span>Low Compression (better quality)</span>
+          <span><strong>Low Quality</strong> - Maximum compression (~60% reduction, 50% size + 50% quality)</span>
         </label>
       </div>
       <div>
         <label class="flex items-center">
           <input type="radio" name="compress-level" value="medium" checked class="mr-2">
-          <span>Medium Compression (recommended)</span>
+          <span><strong>Medium Quality</strong> - Balanced (~40% reduction, 70% size + 75% quality) (recommended)</span>
         </label>
       </div>
       <div>
         <label class="flex items-center">
           <input type="radio" name="compress-level" value="high" class="mr-2">
-          <span>High Compression (smaller file)</span>
+          <span><strong>High Quality</strong> - Light compression (~30% reduction, 85% size + 90% quality)</span>
         </label>
       </div>
     </div>
@@ -85,7 +85,7 @@ export function initCompressTool(container) {
 
   compressBtn.addEventListener('click', () => {
     const level = document.querySelector('input[name="compress-level"]:checked').value
-    compressPDF(pdfDoc, level, originalSize, container)
+    compressPDF(uploadedFile, uploadedFileName, level, originalSize, container)
   })
 
   clearBtn.addEventListener('click', () => {
@@ -159,66 +159,71 @@ export function initCompressTool(container) {
   }
 }
 
-async function compressPDF(pdfDoc, level, originalSize, container) {
-  if (!pdfDoc) {
+async function compressPDF(uploadedFile, uploadedFileName, level, originalSize, container) {
+  if (!uploadedFile) {
     showError('Please upload a PDF first', container)
     return
   }
 
   try {
-    showLoading(container, 'Compressing PDF...')
+    showLoading(container, 'Compressing PDF with backend API... This may take 10-30 seconds')
 
-    // Note: pdf-lib has limited compression capabilities
-    // We can only save with different options
-    // For real compression, we'd need image processing which is complex
+    // Use backend API for compression
+    const API_URL = 'http://localhost:8000'
 
-    let saveOptions = {}
+    const formData = new FormData()
+    formData.append('file', uploadedFile)
+    formData.append('quality', level)
 
-    switch (level) {
-      case 'low':
-        saveOptions = { useObjectStreams: false }
-        break
-      case 'medium':
-        saveOptions = { useObjectStreams: true }
-        break
-      case 'high':
-        saveOptions = { useObjectStreams: true, addDefaultPage: false }
-        break
+    const response = await fetch(`${API_URL}/api/compress`, {
+      method: 'POST',
+      body: formData
+    })
+
+    if (!response.ok) {
+      throw new Error(`Compression failed: ${response.statusText}`)
     }
 
-    const compressedBytes = await pdfDoc.save(saveOptions)
-    const compressedSize = compressedBytes.length
+    // Get compression stats from headers
+    const compressedSizeHeader = response.headers.get('X-Compressed-Size')
+    const originalSizeHeader = response.headers.get('X-Original-Size')
+    const reductionPercent = response.headers.get('X-Reduction-Percent')
 
-    hideLoading()
+    // Download the compressed file
+    const blob = await response.blob()
 
-    // Only download if compression actually reduced file size
-    if (compressedSize >= originalSize) {
-      showError(
-        `Compression didn't reduce file size. Original: ${formatFileSize(originalSize)}, ` +
-        `Result: ${formatFileSize(compressedSize)}. This PDF may already be optimized. ` +
-        `Try a different compression level or use an already uncompressed PDF.`,
-        container
-      )
-      return
-    }
+    // Use blob size if header is missing or 0
+    const compressedSize = parseInt(compressedSizeHeader || '0') || blob.size
+    const actualOriginalSize = parseInt(originalSizeHeader || originalSize) || originalSize
 
-    // File was successfully compressed
-    const reduction = ((originalSize - compressedSize) / originalSize * 100).toFixed(1)
-    const blob = new Blob([compressedBytes], { type: 'application/pdf' })
-
-    // Use original filename with task suffix
     const filename = generateFileName(uploadedFileName || 'document.pdf', 'compressed')
     createDownloadLink(blob, filename)
 
-    showSuccess(
-      `PDF compressed successfully! Size reduced by ${reduction}% ` +
-      `(${formatFileSize(originalSize)} → ${formatFileSize(compressedSize)})`,
-      container
-    )
+    hideLoading()
+
+    // Calculate actual reduction if needed
+    const actualReduction = ((actualOriginalSize - compressedSize) / actualOriginalSize * 100).toFixed(1)
+    const displayReduction = reductionPercent || actualReduction
+
+    // Show success message with stats
+    if (parseFloat(displayReduction) > 0) {
+      showSuccess(
+        `PDF compressed successfully! Size reduced by ${displayReduction}% ` +
+        `(${formatFileSize(actualOriginalSize)} → ${formatFileSize(compressedSize)})`,
+        container
+      )
+    } else {
+      showSuccess(
+        `PDF processed. Size: ${formatFileSize(actualOriginalSize)} → ${formatFileSize(compressedSize)}. ` +
+        `This PDF may already be optimized or contain mostly text.`,
+        container
+      )
+    }
 
   } catch (error) {
     hideLoading()
     console.error('Compress error:', error)
-    showError('Failed to compress PDF. Please try again.', container)
+    console.error('Error details:', error.message, error.stack)
+    showError(`Failed to compress PDF: ${error.message}`, container)
   }
 }

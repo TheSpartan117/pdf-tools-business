@@ -3,7 +3,7 @@ Professional PDF Tools API
 Provides high-quality conversion and processing for PDF files
 """
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form, BackgroundTasks
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pdf2docx import Converter
@@ -36,6 +36,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
         "http://localhost:5173",
         "https://*.vercel.app",
         "https://*.netlify.app",
@@ -118,7 +120,7 @@ async def root():
     }
 
 @app.post("/api/convert")
-async def convert_pdf_to_word(file: UploadFile = File(...)):
+async def convert_pdf_to_word(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     """
     Convert PDF to Word document
 
@@ -164,12 +166,14 @@ async def convert_pdf_to_word(file: UploadFile = File(...)):
         # Generate output filename
         output_filename = file.filename.rsplit('.', 1)[0] + '.docx'
 
+        # Schedule cleanup after response is sent
+        background_tasks.add_task(cleanup_temp_files, pdf_path, docx_path)
+
         # Return the converted file
         return FileResponse(
             path=docx_path,
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            filename=output_filename,
-            background=lambda: cleanup_temp_files(pdf_path, docx_path)
+            filename=output_filename
         )
 
     except Exception as e:
@@ -179,7 +183,7 @@ async def convert_pdf_to_word(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Conversion failed: {str(e)}")
 
 @app.post("/api/word-to-pdf")
-async def convert_word_to_pdf(file: UploadFile = File(...)):
+async def convert_word_to_pdf(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     """
     Convert Word document to PDF
 
@@ -239,11 +243,13 @@ async def convert_word_to_pdf(file: UploadFile = File(...)):
         # Generate output filename
         output_filename = file.filename.rsplit('.', 1)[0] + '.pdf'
 
+        # Schedule cleanup after response is sent
+        background_tasks.add_task(cleanup_temp_files, docx_path, pdf_path)
+
         return FileResponse(
             path=pdf_path,
             media_type="application/pdf",
-            filename=output_filename,
-            background=lambda: cleanup_temp_files(docx_path, pdf_path)
+            filename=output_filename
         )
 
     except subprocess.TimeoutExpired:
@@ -255,7 +261,7 @@ async def convert_word_to_pdf(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Conversion failed: {str(e)}")
 
 @app.post("/api/ocr")
-async def ocr_pdf(file: UploadFile = File(...), language: str = Form("eng")):
+async def ocr_pdf(background_tasks: BackgroundTasks, file: UploadFile = File(...), language: str = Form("eng")):
     """
     Perform OCR on scanned PDF and create searchable PDF
 
@@ -325,11 +331,13 @@ async def ocr_pdf(file: UploadFile = File(...), language: str = Form("eng")):
         # Generate output filename
         output_filename = file.filename.rsplit('.', 1)[0] + '_ocr.pdf'
 
+        # Schedule cleanup after response is sent
+        background_tasks.add_task(cleanup_temp_files, pdf_path, output_pdf_path)
+
         return FileResponse(
             path=output_pdf_path,
             media_type="application/pdf",
-            filename=output_filename,
-            background=lambda: cleanup_temp_files(pdf_path, output_pdf_path)
+            filename=output_filename
         )
 
     except Exception as e:
@@ -338,7 +346,7 @@ async def ocr_pdf(file: UploadFile = File(...), language: str = Form("eng")):
         raise HTTPException(status_code=500, detail=f"OCR failed: {str(e)}")
 
 @app.post("/api/compress")
-async def compress_pdf(file: UploadFile = File(...), quality: str = Form("medium")):
+async def compress_pdf(background_tasks: BackgroundTasks, file: UploadFile = File(...), quality: str = Form("medium")):
     """
     Compress PDF file to reduce size
 
@@ -482,6 +490,9 @@ async def compress_pdf(file: UploadFile = File(...), quality: str = Form("medium
         # Generate output filename
         output_filename = file.filename.rsplit('.', 1)[0] + '_compressed.pdf'
 
+        # Schedule cleanup after response is sent
+        background_tasks.add_task(cleanup_temp_files, pdf_path, compressed_pdf_path)
+
         return FileResponse(
             path=compressed_pdf_path,
             media_type="application/pdf",
@@ -490,8 +501,7 @@ async def compress_pdf(file: UploadFile = File(...), quality: str = Form("medium
                 "X-Original-Size": str(original_size),
                 "X-Compressed-Size": str(compressed_size),
                 "X-Reduction-Percent": f"{reduction:.1f}"
-            },
-            background=lambda: cleanup_temp_files(pdf_path, compressed_pdf_path)
+            }
         )
 
     except Exception as e:
