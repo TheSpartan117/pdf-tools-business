@@ -6,7 +6,10 @@ import { renderPreview } from '../utils/preview-renderer.js'
 import { generateFileName } from '../utils/file-naming.js'
 
 // Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).href
 
 export function initOcrTool(container) {
   let uploadedFile = null
