@@ -43,7 +43,7 @@ function createParagraph(item) {
   // Bullet lists
   if (item.type === 'bullet') {
     // Remove bullet character from text
-    const text = item.text.replace(/^[•○▪■◆▸\-\*]\s*/, '')
+    const text = item.text.replace(/^[•○▪■◆▸\-\*—]\s*/, '')
 
     return new Paragraph({
       text: text,
@@ -55,7 +55,7 @@ function createParagraph(item) {
   // Numbered lists
   if (item.type === 'numbered') {
     // Remove number from text
-    const text = item.text.replace(/^(\d+[\.\)]|\([a-z0-9]+\)|[a-z]\))\s*/i, '')
+    const text = item.text.replace(/^(\d+[\.\)]|\([a-z0-9]+\)|[a-z]\)|[ivx]+\.)\s*/i, '')
 
     return new Paragraph({
       text: text,
@@ -71,7 +71,7 @@ function createParagraph(item) {
         text: run.text,
         bold: run.bold || false,
         italics: run.italic || false,
-        size: run.size ? Math.round(run.size * 2) : undefined // Convert points to half-points
+        size: (run.size && typeof run.size === 'number') ? Math.round(run.size * 2) : undefined // Convert points to half-points
       })
     })
 
@@ -139,13 +139,18 @@ async function createImageParagraph(imageData) {
  * @returns {Promise<Document>}
  */
 export async function buildWordDocument(processedContent, imageDataMap = {}) {
+  // Input validation
+  if (!Array.isArray(processedContent)) {
+    throw new Error('processedContent must be an array')
+  }
+
   const children = []
 
   for (const item of processedContent) {
     if (item.type === 'image') {
       // Handle image
       const imageData = imageDataMap[item.imageIndex]
-      if (imageData) {
+      if (imageData && imageData.blob && imageData.width && imageData.height) {
         const imageParagraph = await createImageParagraph(imageData)
         children.push(imageParagraph)
       }
@@ -154,6 +159,17 @@ export async function buildWordDocument(processedContent, imageDataMap = {}) {
       const paragraph = createParagraph(item)
       children.push(paragraph)
     }
+  }
+
+  // Handle empty documents
+  if (children.length === 0) {
+    // Add a paragraph explaining no content found
+    children.push(
+      new Paragraph({
+        text: 'No content could be extracted from the PDF.',
+        spacing: { after: 200 }
+      })
+    )
   }
 
   // Create document
