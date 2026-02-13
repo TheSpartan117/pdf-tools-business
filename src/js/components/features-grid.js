@@ -4,13 +4,13 @@ import { navigateTo } from '../router.js'
 export function createFeaturesGrid() {
   const section = document.createElement('section')
   section.id = 'features'
-  section.className = 'container mx-auto px-4 py-16'
+  section.className = 'py-4'
 
   const header = document.createElement('div')
-  header.className = 'text-center mb-12'
+  header.className = 'text-center mb-6'
   header.innerHTML = `
-    <h2 class="text-4xl font-bold text-gray-900 mb-4">All Tools</h2>
-    <p class="text-xl text-gray-600">Choose a tool to get started</p>
+    <h2 class="text-3xl font-bold text-gray-900 mb-2">All Tools</h2>
+    <p class="text-lg text-gray-600">Choose a tool to get started</p>
   `
 
   const grid = document.createElement('div')
