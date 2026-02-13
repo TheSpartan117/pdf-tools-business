@@ -54,6 +54,11 @@ function showToolPage(params) {
         module.initMergeTool(contentContainer)
       })
       break
+    case 'split':
+      import('./tools/split.js').then(module => {
+        module.initSplitTool(contentContainer)
+      })
+      break
     default:
       contentContainer.innerHTML = `
         <div class="text-center text-gray-600">
