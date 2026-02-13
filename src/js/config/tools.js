@@ -54,6 +54,20 @@ export const TOOLS = [
     enabled: true
   },
   {
+    id: 'pdf-to-word',
+    name: 'PDF to Word',
+    description: 'Convert PDF documents to editable Word files',
+    icon: '📄→📝',
+    enabled: true
+  },
+  {
+    id: 'word-to-pdf',
+    name: 'Word to PDF',
+    description: 'Convert Word documents to PDF format',
+    icon: '📝→📄',
+    enabled: true
+  },
+  {
     id: 'extract',
     name: 'Extract Pages',
     description: 'Select specific pages to extract',

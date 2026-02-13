@@ -117,6 +117,16 @@ function showToolPage(params) {
         module.initImagesToPdfTool(contentContainer)
       })
       break
+    case 'pdf-to-word':
+      import('./tools/pdf-to-word.js').then(module => {
+        module.initPdfToWordTool(contentContainer)
+      })
+      break
+    case 'word-to-pdf':
+      import('./tools/word-to-pdf.js').then(module => {
+        module.initWordToPdfTool(contentContainer)
+      })
+      break
     case 'ocr':
       import('./tools/ocr.js').then(module => {
         module.initOcrTool(contentContainer)
