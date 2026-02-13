@@ -9,8 +9,7 @@ import * as mupdf from 'mupdf'
 import {
   calculateMedianFontSize,
   classifyLineType,
-  groupIntoTextRuns,
-  groupLinesIntoParagraphs
+  groupIntoTextRuns
 } from './format-detection.js'
 
 // Debug mode - set to true to see detailed extraction info
@@ -31,6 +30,11 @@ export function isWasmSupported() {
  */
 export async function loadPdfWithMuPDF(arrayBuffer) {
   try {
+    // Validate input type
+    if (!(arrayBuffer instanceof ArrayBuffer)) {
+      throw new Error('Invalid input: Expected ArrayBuffer')
+    }
+
     // Create Uint8Array from ArrayBuffer
     const data = new Uint8Array(arrayBuffer)
 
@@ -183,14 +187,14 @@ export function processStructuredTextBlocks(allPagesData) {
         } else {
           // Start new paragraph
           finalContent.push(currentParagraph)
-          currentParagraph = { ...item }
+          currentParagraph = { ...item, textRuns: [...item.textRuns] }
         }
       } else {
         // Close previous non-paragraph item
         if (currentParagraph) {
           finalContent.push(currentParagraph)
         }
-        currentParagraph = { ...item }
+        currentParagraph = { ...item, textRuns: [...item.textRuns] }
       }
     } else {
       // Headings, lists, images - don't merge
