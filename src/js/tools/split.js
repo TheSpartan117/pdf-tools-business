@@ -1,10 +1,12 @@
 import { PDFDocument } from 'pdf-lib'
 import { validatePDF, readFileAsArrayBuffer, createDownloadLink } from '../utils/file-handler.js'
 import { showError, showSuccess, showLoading, hideLoading, createUploadZone } from '../utils/ui-helpers.js'
+import { generateFileName } from '../utils/file-naming.js'
 
 export function initSplitTool(container) {
   let uploadedFile = null
   let pdfDoc = null
+  let uploadedFileName = ''
 
   const content = document.createElement('div')
   content.className = 'max-w-4xl mx-auto'
@@ -90,7 +92,7 @@ export function initSplitTool(container) {
 
   splitBtn.addEventListener('click', () => {
     const mode = document.querySelector('input[name="split-mode"]:checked').value
-    splitPDF(pdfDoc, mode, container)
+    splitPDF(pdfDoc, mode, container, uploadedFileName)
   })
 
   clearBtn.addEventListener('click', () => {
@@ -114,6 +116,7 @@ export function initSplitTool(container) {
       showLoading(container, 'Loading PDF...')
 
       uploadedFile = file
+      uploadedFileName = file.name
       const arrayBuffer = await readFileAsArrayBuffer(file)
       pdfDoc = await PDFDocument.load(arrayBuffer)
       const pageCount = pdfDoc.getPageCount()
@@ -152,7 +155,7 @@ export function initSplitTool(container) {
   }
 }
 
-async function splitPDF(pdfDoc, mode, container) {
+async function splitPDF(pdfDoc, mode, container, uploadedFileName) {
   if (!pdfDoc) {
     showError('Please upload a PDF first', container)
     return
@@ -172,7 +175,9 @@ async function splitPDF(pdfDoc, mode, container) {
 
         const pdfBytes = await newPdf.save()
         const blob = new Blob([pdfBytes], { type: 'application/pdf' })
-        createDownloadLink(blob, `page-${i + 1}.pdf`)
+        // Use original filename with page number
+        const filename = generateFileName(uploadedFileName, `page-${i + 1}`)
+        createDownloadLink(blob, filename)
       }
 
       hideLoading()
@@ -196,7 +201,9 @@ async function splitPDF(pdfDoc, mode, container) {
       const blob = new Blob([pdfBytes], { type: 'application/pdf' })
 
       hideLoading()
-      createDownloadLink(blob, `extracted-pages.pdf`)
+      // Use original filename with 'extracted' suffix
+      const filename = generateFileName(uploadedFileName, 'extracted')
+      createDownloadLink(blob, filename)
       showSuccess(`Successfully extracted ${pages.length} pages!`, container)
     }
 
