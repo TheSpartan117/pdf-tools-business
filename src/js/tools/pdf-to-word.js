@@ -233,3 +233,71 @@ async function extractTextFromPage(page) {
   }
 
   return paragraphs.length > 0 ? paragraphs : lines.map(l => l.text)
+}
+
+/**
+ * Extract images from a PDF page as PNG blobs
+ */
+async function extractImagesFromPage(page) {
+  try {
+    const operatorList = await page.getOperatorList()
+    const images = []
+
+    // Find image operations (fn 85 = paintImageXObject, fn 86 = paintInlineImageXObject)
+    for (let i = 0; i < operatorList.fnArray.length; i++) {
+      const fn = operatorList.fnArray[i]
+
+      if (fn === 85 || fn === 86) { // Image operations
+        const argsArray = operatorList.argsArray[i]
+        const imageName = argsArray[0]
+
+        try {
+          // Get image data from page objects
+          const imageData = await new Promise((resolve, reject) => {
+            page.objs.get(imageName, (img) => {
+              if (img) {
+                resolve(img)
+              } else {
+                reject(new Error('Image not found'))
+              }
+            })
+          })
+
+          if (imageData && imageData.width && imageData.height) {
+            // Create canvas to convert image to PNG blob
+            const canvas = document.createElement('canvas')
+            canvas.width = imageData.width
+            canvas.height = imageData.height
+            const ctx = canvas.getContext('2d')
+
+            // Draw image data to canvas
+            const imgData = ctx.createImageData(imageData.width, imageData.height)
+            imgData.data.set(imageData.data)
+            ctx.putImageData(imgData, 0, 0)
+
+            // Convert canvas to blob
+            const blob = await new Promise((resolve) => {
+              canvas.toBlob(resolve, 'image/png')
+            })
+
+            if (blob) {
+              images.push({
+                blob,
+                width: imageData.width,
+                height: imageData.height
+              })
+            }
+          }
+        } catch (imgError) {
+          console.warn('Failed to extract image:', imgError)
+          // Continue processing other images
+        }
+      }
+    }
+
+    return images
+  } catch (error) {
+    console.warn('Error extracting images from page:', error)
+    return []
+  }
+}
