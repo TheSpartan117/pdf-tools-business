@@ -12,7 +12,11 @@ export function validatePDF(file) {
     return { valid: false, errors }
   }
 
-  if (file.type !== 'application/pdf') {
+  // Check both MIME type and file extension (some browsers don't set MIME type)
+  const isPdfMimeType = file.type === 'application/pdf'
+  const isPdfExtension = file.name.toLowerCase().endsWith('.pdf')
+
+  if (!isPdfMimeType && !isPdfExtension) {
     errors.push('Please upload a valid PDF file')
   }
 
