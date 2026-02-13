@@ -101,7 +101,45 @@ export function initWordToPdfTool(container) {
   })
 
   function handleFileUpload(file, uploadSection, container) {
-    console.log('handleFileUpload called with:', file.name)
+    // Validate file
+    if (!validateWordFile(file)) {
+      showError(container, 'Please upload a valid .docx file')
+      return
+    }
+
+    // Store file and filename
+    uploadedFile = file
+    uploadedFileName = file.name
+
+    // Hide upload zone
+    const uploadArea = uploadSection.querySelector('[data-upload-area]')
+    if (uploadArea) {
+      uploadArea.classList.add('hidden')
+    }
+
+    // Create and show file info
+    const fileInfo = document.createElement('div')
+    fileInfo.id = 'file-info-word-to-pdf'
+    fileInfo.className = 'mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200'
+    fileInfo.innerHTML = `
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <svg class="h-10 w-10 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+          </svg>
+          <div>
+            <p class="text-sm font-medium text-gray-900">${file.name}</p>
+            <p class="text-sm text-gray-500">${(file.size / 1024).toFixed(1)} KB</p>
+          </div>
+        </div>
+      </div>
+    `
+
+    // Insert file info after upload section
+    uploadSection.appendChild(fileInfo)
+
+    // Show action buttons
+    actionButtons.classList.remove('hidden')
   }
 
   container.appendChild(content)
