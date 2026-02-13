@@ -402,26 +402,36 @@ async function convertPdfToWord(file, container, fileName) {
  */
 async function convertWithPdfJs(file, container, fileName) {
   // This is the OLD implementation - keep as fallback
+  console.log('Starting PDF.js conversion...')
   showLoading(container, 'Converting PDF to Word (basic mode)...')
 
   try {
     // Read file as ArrayBuffer
+    console.log('Reading file...')
     const arrayBuffer = await readFileAsArrayBuffer(file)
+    console.log('File read successfully, size:', arrayBuffer.byteLength)
 
     // Load PDF document
+    console.log('Loading PDF with PDF.js...')
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
     const pageCount = pdf.numPages
+    console.log('PDF loaded, pages:', pageCount)
 
     const pagesData = []
     let totalTextLength = 0
 
     // Process each page
     for (let i = 1; i <= pageCount; i++) {
+      console.log(`Processing page ${i}/${pageCount}...`)
       showLoading(container, `Processing page ${i} of ${pageCount}...`)
 
       const page = await pdf.getPage(i)
+      console.log(`Page ${i} loaded, extracting text...`)
       const paragraphs = await extractTextFromPage(page)
-      const images = await extractImagesFromPage(page)
+      console.log(`Page ${i} text extracted, paragraphs:`, paragraphs.length)
+
+      // Skip image extraction for now to avoid hanging
+      const images = []
 
       const pageTextLength = paragraphs.join('').length
       totalTextLength += pageTextLength
@@ -432,6 +442,7 @@ async function convertWithPdfJs(file, container, fileName) {
         images
       })
     }
+    console.log('All pages processed, building Word document...')
 
     // Validate PDF has selectable text
     if (totalTextLength === 0) {
@@ -445,12 +456,15 @@ async function convertWithPdfJs(file, container, fileName) {
     }
 
     // Build Word document (using old simple method)
+    console.log('Building Word document...')
     showLoading(container, 'Building Word document...')
     const doc = await buildWordDocumentLegacy(pagesData)
+    console.log('Word document built, generating blob...')
 
     // Generate .docx blob
     showLoading(container, 'Generating file...')
     const blob = await Packer.toBlob(doc)
+    console.log('Blob generated, size:', blob.size)
 
     // Hide loading BEFORE download
     hideLoading()
