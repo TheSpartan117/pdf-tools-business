@@ -8,7 +8,7 @@ export function validatePDF(file) {
   const errors = []
 
   // Debug logging
-  console.log('Validating PDF file:', {
+  // console.log('Validating PDF file:', {
     name: file?.name,
     type: file?.type,
     size: file?.size
@@ -35,7 +35,7 @@ export function validatePDF(file) {
     errors.push(`File exceeds ${MAX_FILE_SIZE / 1024 / 1024}MB limit`)
   }
 
-  console.log('Validation result:', { valid: errors.length === 0, errors })
+  // console.log('Validation result:', { valid: errors.length === 0, errors })
 
   return {
     valid: errors.length === 0,
