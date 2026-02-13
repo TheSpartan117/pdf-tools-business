@@ -345,9 +345,10 @@ async function convertPdfToWord(file, container, fileName) {
   }
 
   // Check WebAssembly support
-  if (!isWasmSupported()) {
-    showError('Your browser does not support advanced PDF processing. Please use Chrome, Firefox, Safari, or Edge.', container)
-    return
+  const wasmSupported = await isWasmSupported()
+  if (!wasmSupported) {
+    console.warn('MuPDF not available, using PDF.js fallback')
+    // Fall through to PDF.js conversion
   }
 
   // Try MuPDF first, fallback to PDF.js if it fails

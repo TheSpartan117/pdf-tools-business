@@ -3,9 +3,23 @@
  * Handles PDF loading, structured text extraction, and image extraction with MuPDF
  *
  * DEBUG MODE: Set DEBUG_MODE = true below to see detailed extraction info in console
+ *
+ * NOTE: MuPDF has Node.js dependencies that are problematic in browser.
+ * This module provides graceful fallback to PDF.js if MuPDF fails.
  */
 
-import * as mupdf from 'mupdf'
+// Lazy load mupdf to handle import errors gracefully
+let mupdfModule = null
+async function getMupdf() {
+  if (mupdfModule) return mupdfModule
+  try {
+    mupdfModule = await import('mupdf')
+    return mupdfModule
+  } catch (error) {
+    console.warn('MuPDF failed to load:', error.message)
+    return null
+  }
+}
 import {
   calculateMedianFontSize,
   classifyLineType,
@@ -16,11 +30,13 @@ import {
 const DEBUG_MODE = false // Set to true during development
 
 /**
- * Check if WebAssembly is supported
- * @returns {boolean}
+ * Check if WebAssembly and MuPDF are supported
+ * @returns {Promise<boolean>}
  */
-export function isWasmSupported() {
-  return typeof WebAssembly !== 'undefined'
+export async function isWasmSupported() {
+  if (typeof WebAssembly === 'undefined') return false
+  const mupdf = await getMupdf()
+  return mupdf !== null
 }
 
 /**
@@ -35,11 +51,17 @@ export async function loadPdfWithMuPDF(arrayBuffer) {
       throw new Error('Invalid input: Expected ArrayBuffer')
     }
 
+    // Get MuPDF module
+    const mupdf = await getMupdf()
+    if (!mupdf) {
+      throw new Error('MuPDF not available')
+    }
+
     // Create Uint8Array from ArrayBuffer
     const data = new Uint8Array(arrayBuffer)
 
     // Load document with MuPDF
-    const doc = mupdf.Document.openDocument(data, "application/pdf")
+    const doc = mupdf.default.Document.openDocument(data, "application/pdf")
 
     return doc
   } catch (error) {
