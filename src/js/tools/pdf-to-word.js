@@ -13,6 +13,55 @@ import {
 } from '../utils/mupdf-extractor.js'
 import { buildWordDocument, generateDocxBlob } from '../utils/word-builder.js'
 
+/**
+ * Extract images using PDF.js (fallback for MuPDF)
+ * @param {File} file - PDF file
+ * @param {Array} allPagesData - Page data from MuPDF with image blocks
+ * @returns {Promise<Object>} - Map of imageIndex to image data
+ */
+async function extractImagesWithPdfJs(file, allPagesData) {
+  const imageDataMap = {}
+
+  try {
+    const arrayBuffer = await readFileAsArrayBuffer(file)
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+
+    // Track image index across all pages
+    let globalImageIndex = 0
+
+    for (const pageData of allPagesData) {
+      const { pageNumber, blocks } = pageData
+
+      // Count images on this page
+      const imageBlocks = blocks.filter(b => b.type === 'image')
+
+      if (imageBlocks.length === 0) continue
+
+      // Load page with PDF.js
+      const page = await pdf.getPage(pageNumber)
+
+      // Extract images using existing function
+      const images = await extractImagesFromPage(page)
+
+      // Map images to their indices
+      images.forEach((imageData, localIndex) => {
+        if (localIndex < imageBlocks.length) {
+          imageDataMap[globalImageIndex + localIndex] = imageData
+        }
+      })
+
+      globalImageIndex += imageBlocks.length
+    }
+
+    pdf.destroy()
+
+  } catch (error) {
+    console.warn('Failed to extract images with PDF.js:', error)
+  }
+
+  return imageDataMap
+}
+
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -241,10 +290,9 @@ async function convertWithMuPDF(file, container, fileName) {
     showLoading(container, 'Analyzing document structure...')
     const processedContent = processStructuredTextBlocks(allPagesData)
 
-    // Extract images (placeholder for now)
+    // Extract images using PDF.js fallback
     showLoading(container, 'Extracting images...')
-    const imageDataMap = {}
-    // TODO: Implement image extraction with MuPDF or fallback to PDF.js
+    const imageDataMap = await extractImagesWithPdfJs(file, allPagesData)
 
     // Build Word document
     showLoading(container, 'Building Word document...')
