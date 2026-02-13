@@ -112,9 +112,13 @@ export function initPdfToWordTool(container) {
       return
     }
 
-    showLoading(uploadSection)
+    showLoading(container, 'Loading PDF...')
 
     try {
+      // Store uploaded file info
+      uploadedFile = file
+      uploadedFileName = file.name
+
       // Read file
       const arrayBuffer = await readFileAsArrayBuffer(file)
 
@@ -125,7 +129,7 @@ export function initPdfToWordTool(container) {
       // Clean up
       pdf.destroy()
 
-      hideLoading(uploadSection)
+      hideLoading()
 
       // Store file data
       uploadedFile = arrayBuffer
@@ -182,8 +186,11 @@ async function convertPdfToWord(file, container, fileName) {
   showLoading(container, 'Converting PDF to Word...')
 
   try {
+    // Read file as ArrayBuffer
+    const arrayBuffer = await readFileAsArrayBuffer(file)
+
     // Load PDF document
-    const pdf = await pdfjsLib.getDocument({ data: file }).promise
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
     const pageCount = pdf.numPages
 
     const pagesData = []
@@ -215,7 +222,7 @@ async function convertPdfToWord(file, container, fileName) {
 
     // Validate PDF has selectable text
     if (totalTextLength === 0) {
-      hideLoading(container)
+      hideLoading()
       showError(
         'This PDF does not contain selectable text. It appears to be a scanned document. Please use the OCR tool first to convert it to a searchable PDF.',
         container
@@ -243,13 +250,13 @@ async function convertPdfToWord(file, container, fileName) {
     setTimeout(() => URL.revokeObjectURL(url), 100)
 
     // Show success message
-    hideLoading(container)
+    hideLoading()
     showSuccess(`Successfully converted to Word: ${outputFileName}`, container)
 
     // Clean up PDF
     pdf.destroy()
   } catch (error) {
-    hideLoading(container)
+    hideLoading()
     console.error('Error converting PDF to Word:', error)
     showError(
       'Failed to convert PDF to Word. Please ensure the file is a valid PDF document.',
