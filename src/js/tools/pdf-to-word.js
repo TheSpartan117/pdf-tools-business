@@ -103,9 +103,67 @@ export function initPdfToWordTool(container) {
     })
   }
 
-  function handleFileUpload(file, uploadSection, container) {
-    // TODO: Implement
-    console.log('File uploaded:', file.name)
+  async function handleFileUpload(file, uploadSection, container) {
+    // Validate PDF
+    const validation = validatePDF(file)
+    if (!validation.valid) {
+      showError(validation.error, uploadSection)
+      return
+    }
+
+    showLoading(uploadSection)
+
+    try {
+      // Read file
+      const arrayBuffer = await readFileAsArrayBuffer(file)
+
+      // Load PDF to get page count
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+      const pageCount = pdf.numPages
+
+      // Clean up
+      pdf.destroy()
+
+      hideLoading(uploadSection)
+
+      // Store file data
+      uploadedFile = arrayBuffer
+      uploadedFileName = file.name
+
+      // Hide upload zone
+      uploadSection.querySelector('.upload-zone').classList.add('hidden')
+
+      // Show file info
+      const fileInfo = document.createElement('div')
+      fileInfo.id = 'file-info-pdf-to-word'
+      fileInfo.className = 'text-center'
+      fileInfo.innerHTML = `
+        <div id="pdf-to-word-preview" class="mb-4 flex justify-center"></div>
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-lg mb-4">
+          <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div class="text-lg font-semibold text-gray-900 mb-1">${file.name}</div>
+        <div class="text-sm text-gray-500">${pageCount} page${pageCount !== 1 ? 's' : ''}</div>
+      `
+
+      uploadSection.appendChild(fileInfo)
+
+      // Render preview
+      const previewContainer = document.getElementById('pdf-to-word-preview')
+      await renderPreview(arrayBuffer, previewContainer, { maxHeight: 150 })
+
+      // Show action buttons
+      const actionsSection = document.getElementById('action-buttons-pdf-to-word')
+      if (actionsSection) {
+        actionsSection.classList.remove('hidden')
+      }
+    } catch (error) {
+      hideLoading(uploadSection)
+      console.error('Error loading PDF:', error)
+      showError('Failed to load PDF. Please ensure the file is a valid PDF document.', uploadSection)
+    }
   }
 
   container.appendChild(content)
