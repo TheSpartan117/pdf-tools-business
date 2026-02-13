@@ -297,8 +297,8 @@ async def ocr_pdf(background_tasks: BackgroundTasks, file: UploadFile = File(...
         # Convert PDF pages to images with lower DPI for smaller file size
         images = convert_from_path(pdf_path, dpi=150)  # Reduced from 300 to 150 DPI
 
-        # Create new PDF with OCR text layer
-        pdf_document = fitz.open()
+        # Create searchable PDF pages using pytesseract
+        pdf_pages = []
 
         for i, image in enumerate(images):
             logger.info(f"OCR processing page {i + 1}/{len(images)}")
@@ -307,24 +307,34 @@ async def ocr_pdf(background_tasks: BackgroundTasks, file: UploadFile = File(...
             img_path = tempfile.mktemp(suffix='.jpg')
             image.save(img_path, 'JPEG', quality=85, optimize=True)
 
-            # Perform OCR
-            ocr_text = pytesseract.image_to_string(Image.open(img_path), lang=language)
+            # Create searchable PDF for this page using pytesseract
+            # This creates a proper text layer with correctly positioned text
+            pdf_bytes = pytesseract.image_to_pdf_or_hocr(img_path, lang=language, extension='pdf')
 
-            # Create new PDF page with image and text layer
-            img_pdf = fitz.open(img_path)
-            pdf_page = pdf_document.new_page(width=img_pdf[0].rect.width, height=img_pdf[0].rect.height)
-            pdf_page.insert_image(pdf_page.rect, filename=img_path)
+            # Save the searchable PDF page
+            page_pdf_path = tempfile.mktemp(suffix='.pdf')
+            with open(page_pdf_path, 'wb') as f:
+                f.write(pdf_bytes)
 
-            # Add invisible text layer for searchability
-            if ocr_text.strip():
-                pdf_page.insert_text((10, 10), ocr_text, fontsize=1, color=(1, 1, 1))
-
-            img_pdf.close()
+            pdf_pages.append(page_pdf_path)
             os.unlink(img_path)
 
-        # Save the OCR'd PDF with compression
-        pdf_document.save(output_pdf_path, garbage=4, deflate=True)
-        pdf_document.close()
+        # Merge all pages into one PDF
+        if len(pdf_pages) == 1:
+            # Single page - just rename
+            os.rename(pdf_pages[0], output_pdf_path)
+        else:
+            # Multiple pages - merge them
+            pdf_document = fitz.open()
+            for page_path in pdf_pages:
+                page_doc = fitz.open(page_path)
+                pdf_document.insert_pdf(page_doc)
+                page_doc.close()
+                os.unlink(page_path)
+
+            # Save the merged PDF with compression
+            pdf_document.save(output_pdf_path, garbage=4, deflate=True)
+            pdf_document.close()
 
         logger.info(f"OCR successful: {file.filename}")
 
