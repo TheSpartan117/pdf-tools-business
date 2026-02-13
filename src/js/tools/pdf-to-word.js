@@ -169,9 +169,94 @@ export function initPdfToWordTool(container) {
   container.appendChild(content)
 }
 
-// Stub functions to be implemented
-function convertPdfToWord(file, container, fileName) {
-  console.log('Convert to Word:', fileName)
+/**
+ * Main PDF to Word conversion function
+ * Orchestrates the entire conversion process
+ */
+async function convertPdfToWord(file, container, fileName) {
+  // Validate file exists
+  if (!file) {
+    showError('No PDF file loaded. Please upload a PDF first.', container)
+    return
+  }
+
+  showLoading(container, 'Converting PDF to Word...')
+
+  try {
+    // Load PDF document
+    const pdf = await pdfjsLib.getDocument({ data: file }).promise
+    const pageCount = pdf.numPages
+
+    const pagesData = []
+    let totalTextLength = 0
+
+    // Process each page
+    for (let i = 1; i <= pageCount; i++) {
+      // Update loading message with progress
+      showLoading(container, `Processing page ${i} of ${pageCount}...`)
+
+      // Get page object
+      const page = await pdf.getPage(i)
+
+      // Extract text and images
+      const paragraphs = await extractTextFromPage(page)
+      const images = await extractImagesFromPage(page)
+
+      // Track total text length
+      const pageTextLength = paragraphs.join('').length
+      totalTextLength += pageTextLength
+
+      // Store page data
+      pagesData.push({
+        pageNumber: i,
+        paragraphs,
+        images
+      })
+    }
+
+    // Validate PDF has selectable text
+    if (totalTextLength === 0) {
+      hideLoading(container)
+      showError(
+        'This PDF does not contain selectable text. It appears to be a scanned document. Please use the OCR tool first to convert it to a searchable PDF.',
+        container
+      )
+      pdf.destroy()
+      return
+    }
+
+    // Build Word document
+    showLoading(container, 'Building Word document...')
+    const doc = await buildWordDocument(pagesData)
+
+    // Generate .docx blob
+    const blob = await Packer.toBlob(doc)
+
+    // Download file
+    const outputFileName = generateFileName(fileName, 'to-word', 'docx')
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = outputFileName
+    a.click()
+
+    // Cleanup
+    setTimeout(() => URL.revokeObjectURL(url), 100)
+
+    // Show success message
+    hideLoading(container)
+    showSuccess(`Successfully converted to Word: ${outputFileName}`, container)
+
+    // Clean up PDF
+    pdf.destroy()
+  } catch (error) {
+    hideLoading(container)
+    console.error('Error converting PDF to Word:', error)
+    showError(
+      'Failed to convert PDF to Word. Please ensure the file is a valid PDF document.',
+      container
+    )
+  }
 }
 
 /**
