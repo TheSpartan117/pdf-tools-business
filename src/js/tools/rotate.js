@@ -1,10 +1,12 @@
 import { PDFDocument, degrees } from 'pdf-lib'
 import { validatePDF, readFileAsArrayBuffer, createDownloadLink } from '../utils/file-handler.js'
 import { showError, showSuccess, showLoading, hideLoading, createUploadZone } from '../utils/ui-helpers.js'
+import { generateFileName } from '../utils/file-naming.js'
 
 export function initRotateTool(container) {
   let uploadedFile = null
   let pdfDoc = null
+  let uploadedFileName = ''
 
   const content = document.createElement('div')
   content.className = 'max-w-4xl mx-auto'
@@ -126,7 +128,7 @@ export function initRotateTool(container) {
     }
 
     const scope = document.querySelector('input[name="rotate-scope"]:checked').value
-    rotatePDF(pdfDoc, selectedAngle, scope, container)
+    rotatePDF(pdfDoc, selectedAngle, scope, container, uploadedFileName)
   })
 
   clearBtn.addEventListener('click', () => {
@@ -153,6 +155,7 @@ export function initRotateTool(container) {
       showLoading(container, 'Loading PDF...')
 
       uploadedFile = file
+      uploadedFileName = file.name
       const arrayBuffer = await readFileAsArrayBuffer(file)
       pdfDoc = await PDFDocument.load(arrayBuffer)
       const pageCount = pdfDoc.getPageCount()
@@ -191,7 +194,7 @@ export function initRotateTool(container) {
   }
 }
 
-async function rotatePDF(pdfDoc, angle, scope, container) {
+async function rotatePDF(pdfDoc, angle, scope, container, uploadedFileName) {
   if (!pdfDoc) {
     showError('Please upload a PDF first', container)
     return
@@ -227,7 +230,9 @@ async function rotatePDF(pdfDoc, angle, scope, container) {
     const blob = new Blob([rotatedBytes], { type: 'application/pdf' })
 
     hideLoading()
-    createDownloadLink(blob, 'rotated.pdf')
+    // Use original filename with rotated suffix
+    const filename = generateFileName(uploadedFileName, 'rotated')
+    createDownloadLink(blob, filename)
     showSuccess(`PDF rotated ${angle}° successfully!`, container)
 
   } catch (error) {
