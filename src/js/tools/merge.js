@@ -1,6 +1,7 @@
 import { PDFDocument } from 'pdf-lib'
 import { validatePDF, readFileAsArrayBuffer, createDownloadLink, formatFileSize } from '../utils/file-handler.js'
 import { showError, showSuccess, showLoading, hideLoading, createUploadZone } from '../utils/ui-helpers.js'
+import { generateFileName } from '../utils/file-naming.js'
 
 export function initMergeTool(container) {
   const uploadedFiles = []
@@ -139,7 +140,9 @@ async function mergePDFs(files, container) {
     const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' })
 
     hideLoading()
-    createDownloadLink(blob, 'merged.pdf')
+    // Use first file's name as base
+    const filename = generateFileName(files[0].name, 'merged')
+    createDownloadLink(blob, filename)
     showSuccess('PDFs merged successfully!', container)
 
   } catch (error) {
