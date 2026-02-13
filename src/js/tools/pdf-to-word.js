@@ -53,8 +53,6 @@ export function initPdfToWordTool(container) {
   uploadSection.className = 'bg-white rounded-lg shadow-md p-8 mb-6'
 
   const uploadZone = createUploadZone((files) => {
-    // console.log('Files received:', files)
-
     if (!files || files.length === 0) {
       showError('No file selected', uploadSection)
       return
@@ -113,14 +111,10 @@ export function initPdfToWordTool(container) {
   }
 
   async function handleFileUpload(file, uploadSection, container) {
-    // console.log('handleFileUpload called with:', file)
-
     // Validate PDF
     const validation = validatePDF(file)
-    // console.log('Validation result:', validation)
 
     if (!validation.valid) {
-      console.error('Validation failed:', validation.errors)
       showError(validation.errors.join(', '), uploadSection)
       return
     }
