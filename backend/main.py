@@ -373,14 +373,16 @@ async def compress_pdf(file: UploadFile = File(...), quality: str = Form("medium
         pdf_document = fitz.open(pdf_path)
 
         # Compression settings based on quality
+        # resize_factor: percentage of original dimensions to keep
         quality_settings = {
-            "low": {"garbage": 4, "image_quality": 50},
-            "medium": {"garbage": 3, "image_quality": 75},
-            "high": {"garbage": 2, "image_quality": 90}
+            "low": {"garbage": 4, "image_quality": 50, "resize_factor": 0.5},      # 50% size, 50% quality
+            "medium": {"garbage": 3, "image_quality": 75, "resize_factor": 0.7},   # 70% size, 75% quality
+            "high": {"garbage": 2, "image_quality": 90, "resize_factor": 0.85}     # 85% size, 90% quality
         }
 
         settings = quality_settings.get(quality, quality_settings["medium"])
         image_quality = settings["image_quality"]
+        resize_factor = settings["resize_factor"]
 
         logger.info(f"Applying compression with settings: {settings}")
 
@@ -401,8 +403,9 @@ async def compress_pdf(file: UploadFile = File(...), quality: str = Form("medium
                     if image_ext not in ["png", "jpg", "jpeg", "bmp", "tiff"]:
                         continue
 
-                    # Open with PIL and recompress
+                    # Open with PIL
                     img_pil = Image.open(io.BytesIO(image_bytes))
+                    original_width, original_height = img_pil.size
 
                     # Convert RGBA to RGB if necessary
                     if img_pil.mode == 'RGBA':
@@ -412,7 +415,16 @@ async def compress_pdf(file: UploadFile = File(...), quality: str = Form("medium
                     elif img_pil.mode not in ['RGB', 'L']:
                         img_pil = img_pil.convert('RGB')
 
-                    # Recompress image
+                    # Resize image based on quality setting
+                    new_width = int(original_width * resize_factor)
+                    new_height = int(original_height * resize_factor)
+
+                    # Only resize if the new size is smaller
+                    if new_width < original_width and new_height < original_height:
+                        img_pil = img_pil.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                        logger.info(f"Resized image from {original_width}x{original_height} to {new_width}x{new_height}")
+
+                    # Recompress image with quality setting
                     img_output = io.BytesIO()
                     img_pil.save(img_output, format='JPEG', quality=image_quality, optimize=True)
                     img_data = img_output.getvalue()
