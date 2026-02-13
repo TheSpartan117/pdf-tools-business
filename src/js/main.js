@@ -64,6 +64,11 @@ function showToolPage(params) {
         module.initCompressTool(contentContainer)
       })
       break
+    case 'rotate':
+      import('./tools/rotate.js').then(module => {
+        module.initRotateTool(contentContainer)
+      })
+      break
     default:
       contentContainer.innerHTML = `
         <div class="text-center text-gray-600">
