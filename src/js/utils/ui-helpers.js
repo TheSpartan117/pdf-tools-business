@@ -27,6 +27,9 @@ export function showSuccess(message, container) {
 }
 
 export function showLoading(container, message = 'Processing...') {
+  // Remove any existing loading indicators first
+  hideLoading()
+
   const loadingDiv = document.createElement('div')
   loadingDiv.id = 'loading-indicator'
   loadingDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
@@ -36,14 +39,13 @@ export function showLoading(container, message = 'Processing...') {
       <p class="text-gray-700">${message}</p>
     </div>
   `
-  container.appendChild(loadingDiv)
+  document.body.appendChild(loadingDiv)
 }
 
 export function hideLoading() {
-  const loadingDiv = document.getElementById('loading-indicator')
-  if (loadingDiv) {
-    loadingDiv.remove()
-  }
+  // Remove ALL loading indicators (in case multiple were created)
+  const loadingDivs = document.querySelectorAll('#loading-indicator')
+  loadingDivs.forEach(div => div.remove())
 }
 
 export function createUploadZone(onFileSelect) {
