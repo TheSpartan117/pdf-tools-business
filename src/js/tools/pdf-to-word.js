@@ -402,14 +402,16 @@ async function convertPdfToWord(file, container, fileName) {
  */
 async function convertWithPdfJs(file, container, fileName) {
   // This is the OLD implementation - keep as fallback
-  console.log('Starting PDF.js conversion...')
+  window.DEBUG_CONVERSION = true
+  console.error('=== CONVERSION STARTED ===')
+  alert('Conversion started - check console')
   showLoading(container, 'Converting PDF to Word (basic mode)...')
 
   try {
     // Read file as ArrayBuffer
-    console.log('Reading file...')
+    console.error('Reading file...')
     const arrayBuffer = await readFileAsArrayBuffer(file)
-    console.log('File read successfully, size:', arrayBuffer.byteLength)
+    console.error('File read successfully, size:', arrayBuffer.byteLength)
 
     // Load PDF document
     console.log('Loading PDF with PDF.js...')
