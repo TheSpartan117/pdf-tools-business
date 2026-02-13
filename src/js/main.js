@@ -1,7 +1,10 @@
 import { createHeader } from './components/header.js'
 import { createHero } from './components/hero.js'
 import { createFeaturesGrid } from './components/features-grid.js'
+import { createFooter } from './components/footer.js'
 import { createToolPage } from './components/tool-page.js'
+import { createPrivacyPage } from './pages/privacy.js'
+import { createTermsPage } from './pages/terms.js'
 import { initRouter } from './router.js'
 import { TOOLS } from './config/tools.js'
 
@@ -18,7 +21,9 @@ function initApp() {
   // Initialize router
   initRouter({
     home: showHomePage,
-    tool: showToolPage
+    tool: showToolPage,
+    privacy: showPrivacyPage,
+    terms: showTermsPage
   })
 }
 
@@ -29,6 +34,7 @@ function showHomePage() {
   app.appendChild(createHeader())
   app.appendChild(createHero())
   app.appendChild(createFeaturesGrid())
+  app.appendChild(createFooter())
 }
 
 function showToolPage(params) {
@@ -76,4 +82,18 @@ function showToolPage(params) {
         </div>
       `
   }
+}
+
+function showPrivacyPage() {
+  const app = document.getElementById('app')
+  app.innerHTML = ''
+
+  app.appendChild(createPrivacyPage())
+}
+
+function showTermsPage() {
+  const app = document.getElementById('app')
+  app.innerHTML = ''
+
+  app.appendChild(createTermsPage())
 }
