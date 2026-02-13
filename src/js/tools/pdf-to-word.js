@@ -254,9 +254,16 @@ async function convertWithMuPDF(file, container, fileName) {
 
     for (let i = 0; i < pageCount; i++) {
       showLoading(container, `Processing page ${i + 1} of ${pageCount}...`)
+      console.error(`DEBUG: Starting page ${i + 1}`)
 
+      console.error(`DEBUG: Loading page ${i + 1}`)
       const page = mupdfDoc.loadPage(i)
+      console.error(`DEBUG: Page ${i + 1} loaded`)
+
+      console.error(`DEBUG: Extracting structured text from page ${i + 1}`)
       const pageData = extractStructuredText(page, i + 1)
+      console.error(`DEBUG: Structured text extracted from page ${i + 1}, blocks:`, pageData.blocks.length)
+
       allPagesData.push(pageData)
 
       // Clean up page after extraction
@@ -267,6 +274,7 @@ async function convertWithMuPDF(file, container, fileName) {
           console.warn(`Page ${i + 1} cleanup error:`, pageCleanupError)
         }
       }
+      console.error(`DEBUG: Finished page ${i + 1}`)
     }
 
     // Check if any text was found
