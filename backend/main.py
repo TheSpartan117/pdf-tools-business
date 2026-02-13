@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pdf2docx import Converter
 import tempfile
 import os
+import io
 import logging
 from pathlib import Path
 import subprocess
@@ -373,14 +374,56 @@ async def compress_pdf(file: UploadFile = File(...), quality: str = Form("medium
 
         # Compression settings based on quality
         quality_settings = {
-            "low": {"deflate": 9, "garbage": 4, "image_quality": 50},
-            "medium": {"deflate": 5, "garbage": 3, "image_quality": 75},
-            "high": {"deflate": 1, "garbage": 2, "image_quality": 90}
+            "low": {"garbage": 4, "image_quality": 50},
+            "medium": {"garbage": 3, "image_quality": 75},
+            "high": {"garbage": 2, "image_quality": 90}
         }
 
         settings = quality_settings.get(quality, quality_settings["medium"])
+        image_quality = settings["image_quality"]
 
         logger.info(f"Applying compression with settings: {settings}")
+
+        # Compress images in each page
+        for page_num in range(len(pdf_document)):
+            page = pdf_document[page_num]
+            image_list = page.get_images(full=True)
+
+            for img_index, img in enumerate(image_list):
+                xref = img[0]
+                try:
+                    # Extract image
+                    base_image = pdf_document.extract_image(xref)
+                    image_bytes = base_image["image"]
+                    image_ext = base_image["ext"]
+
+                    # Skip if not a compressible format
+                    if image_ext not in ["png", "jpg", "jpeg", "bmp", "tiff"]:
+                        continue
+
+                    # Open with PIL and recompress
+                    img_pil = Image.open(io.BytesIO(image_bytes))
+
+                    # Convert RGBA to RGB if necessary
+                    if img_pil.mode == 'RGBA':
+                        rgb_img = Image.new('RGB', img_pil.size, (255, 255, 255))
+                        rgb_img.paste(img_pil, mask=img_pil.split()[3])
+                        img_pil = rgb_img
+                    elif img_pil.mode not in ['RGB', 'L']:
+                        img_pil = img_pil.convert('RGB')
+
+                    # Recompress image
+                    img_output = io.BytesIO()
+                    img_pil.save(img_output, format='JPEG', quality=image_quality, optimize=True)
+                    img_data = img_output.getvalue()
+
+                    # Replace image in PDF
+                    page.replace_image(xref, stream=img_data)
+
+                except Exception as e:
+                    # Skip problematic images
+                    logger.warning(f"Could not compress image {img_index} on page {page_num}: {e}")
+                    continue
 
         # Save with compression
         pdf_document.save(
