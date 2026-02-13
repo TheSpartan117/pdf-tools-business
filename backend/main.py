@@ -387,6 +387,9 @@ async def compress_pdf(file: UploadFile = File(...), quality: str = Form("medium
         logger.info(f"Applying compression with settings: {settings}")
 
         # Compress images in each page
+        images_compressed = 0
+        images_skipped = 0
+
         for page_num in range(len(pdf_document)):
             page = pdf_document[page_num]
             image_list = page.get_images(full=True)
@@ -398,14 +401,26 @@ async def compress_pdf(file: UploadFile = File(...), quality: str = Form("medium
                     base_image = pdf_document.extract_image(xref)
                     image_bytes = base_image["image"]
                     image_ext = base_image["ext"]
+                    original_image_size = len(image_bytes)
 
                     # Skip if not a compressible format
                     if image_ext not in ["png", "jpg", "jpeg", "bmp", "tiff"]:
+                        images_skipped += 1
+                        continue
+
+                    # Skip very small images (< 10KB) - not worth compressing
+                    if original_image_size < 10240:
+                        images_skipped += 1
                         continue
 
                     # Open with PIL
                     img_pil = Image.open(io.BytesIO(image_bytes))
                     original_width, original_height = img_pil.size
+
+                    # Skip very small dimensions (< 100px on either side)
+                    if original_width < 100 or original_height < 100:
+                        images_skipped += 1
+                        continue
 
                     # Convert RGBA to RGB if necessary
                     if img_pil.mode == 'RGBA':
@@ -422,20 +437,30 @@ async def compress_pdf(file: UploadFile = File(...), quality: str = Form("medium
                     # Only resize if the new size is smaller
                     if new_width < original_width and new_height < original_height:
                         img_pil = img_pil.resize((new_width, new_height), Image.Resampling.LANCZOS)
-                        logger.info(f"Resized image from {original_width}x{original_height} to {new_width}x{new_height}")
 
                     # Recompress image with quality setting
                     img_output = io.BytesIO()
                     img_pil.save(img_output, format='JPEG', quality=image_quality, optimize=True)
                     img_data = img_output.getvalue()
+                    compressed_image_size = len(img_data)
 
-                    # Replace image in PDF
-                    page.replace_image(xref, stream=img_data)
+                    # Only replace if compressed version is actually smaller
+                    if compressed_image_size < original_image_size:
+                        page.replace_image(xref, stream=img_data)
+                        images_compressed += 1
+                        savings = original_image_size - compressed_image_size
+                        logger.info(f"Compressed image {img_index} on page {page_num}: {original_width}x{original_height} -> {new_width}x{new_height}, saved {savings} bytes")
+                    else:
+                        images_skipped += 1
+                        logger.info(f"Skipped image {img_index} on page {page_num}: compressed version would be larger")
 
                 except Exception as e:
                     # Skip problematic images
                     logger.warning(f"Could not compress image {img_index} on page {page_num}: {e}")
+                    images_skipped += 1
                     continue
+
+        logger.info(f"Compression complete: {images_compressed} images compressed, {images_skipped} images skipped")
 
         # Save with compression
         pdf_document.save(
