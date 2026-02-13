@@ -3,6 +3,13 @@
  * Analyzes MuPDF structured text to detect headings, paragraphs, lists, and styles
  */
 
+// Format detection thresholds
+const INDENTATION_THRESHOLD = 20  // Minimum indent in points to consider as list
+const HEADING_1_THRESHOLD = 1.5   // Font size multiplier for H1
+const HEADING_2_THRESHOLD = 1.3   // Font size multiplier for H2
+const HEADING_3_THRESHOLD = 1.1   // Font size multiplier for H3
+const PARAGRAPH_GAP_THRESHOLD = 1.2  // Line spacing multiplier for paragraph breaks
+
 /**
  * Calculate median font size from all text blocks
  * @param {Array} blocks - Array of text blocks from MuPDF
@@ -69,7 +76,7 @@ export function isBulletPoint(text, xPos, leftMargin = 0) {
   const firstChar = text.trim().charAt(0)
 
   // Must have bullet char AND be indented
-  return bulletChars.includes(firstChar) && (xPos - leftMargin) > 20
+  return bulletChars.includes(firstChar) && (xPos - leftMargin) > INDENTATION_THRESHOLD
 }
 
 /**
@@ -97,7 +104,7 @@ export function isNumberedList(text, xPos, leftMargin = 0) {
   const hasNumberPattern = patterns.some(pattern => pattern.test(trimmed))
 
   // Must have number pattern AND be indented
-  return hasNumberPattern && (xPos - leftMargin) > 20
+  return hasNumberPattern && (xPos - leftMargin) > INDENTATION_THRESHOLD
 }
 
 /**
@@ -127,15 +134,15 @@ export function classifyLineType(line, medianSize, leftMargin = 0) {
   }
 
   // Check for headings by font size
-  if (avgSize > medianSize * 1.5) {
+  if (avgSize > medianSize * HEADING_1_THRESHOLD) {
     return 'heading1'
   }
 
-  if (avgSize > medianSize * 1.3) {
+  if (avgSize > medianSize * HEADING_2_THRESHOLD) {
     return 'heading2'
   }
 
-  if (avgSize > medianSize * 1.1) {
+  if (avgSize > medianSize * HEADING_3_THRESHOLD) {
     return 'heading3'
   }
 
@@ -163,8 +170,8 @@ export function groupIntoTextRuns(chars) {
     const charBold = isBoldFont(char.font)
     const charItalic = isItalicFont(char.font)
 
-    // If style changes, start new run
-    if (charBold !== currentRun.bold || charItalic !== currentRun.italic) {
+    // If style or size changes, start new run
+    if (charBold !== currentRun.bold || charItalic !== currentRun.italic || char.size !== currentRun.size) {
       if (currentRun.text) {
         runs.push({ ...currentRun })
       }
@@ -220,7 +227,7 @@ export function groupLinesIntoParagraphs(lines, medianSize) {
     const gap = Math.abs(nextY - currentY)
 
     // If gap is significant, start new paragraph
-    const threshold = medianSize * 1.2
+    const threshold = medianSize * PARAGRAPH_GAP_THRESHOLD
     if (gap > threshold) {
       paragraphs.push(currentParagraph)
       currentParagraph = { lines: [] }
