@@ -7,22 +7,35 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
 export function validatePDF(file) {
   const errors = []
 
+  // Debug logging
+  console.log('Validating PDF file:', {
+    name: file?.name,
+    type: file?.type,
+    size: file?.size
+  })
+
   if (!file) {
     errors.push('No file selected')
     return { valid: false, errors }
   }
 
-  // Check both MIME type and file extension (some browsers don't set MIME type)
-  const isPdfMimeType = file.type === 'application/pdf'
-  const isPdfExtension = file.name.toLowerCase().endsWith('.pdf')
+  // Check file extension (primary check)
+  const fileName = file.name.toLowerCase()
+  const isPdfExtension = fileName.endsWith('.pdf')
 
-  if (!isPdfMimeType && !isPdfExtension) {
-    errors.push('Please upload a valid PDF file')
+  if (!isPdfExtension) {
+    errors.push('Please upload a file with .pdf extension')
+  }
+
+  if (file.size === 0) {
+    errors.push('File is empty')
   }
 
   if (file.size > MAX_FILE_SIZE) {
     errors.push(`File exceeds ${MAX_FILE_SIZE / 1024 / 1024}MB limit`)
   }
+
+  console.log('Validation result:', { valid: errors.length === 0, errors })
 
   return {
     valid: errors.length === 0,
