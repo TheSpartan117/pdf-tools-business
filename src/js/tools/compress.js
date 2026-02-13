@@ -2,6 +2,7 @@ import { PDFDocument } from 'pdf-lib'
 import { validatePDF, readFileAsArrayBuffer, createDownloadLink, formatFileSize } from '../utils/file-handler.js'
 import { showError, showSuccess, showLoading, hideLoading, createUploadZone } from '../utils/ui-helpers.js'
 import { generateFileName } from '../utils/file-naming.js'
+import { renderPreview } from '../utils/preview-renderer.js'
 
 export function initCompressTool(container) {
   let uploadedFile = null
@@ -126,17 +127,24 @@ export function initCompressTool(container) {
       fileInfo.id = 'file-info'
       fileInfo.className = 'bg-gray-50 p-4 rounded'
       fileInfo.innerHTML = `
-        <div class="flex items-center">
-          <svg class="h-8 w-8 text-red-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
-          </svg>
-          <div>
-            <p class="font-medium text-gray-900">${file.name}</p>
-            <p class="text-sm text-gray-600">${pageCount} pages • ${formatFileSize(originalSize)}</p>
+        <div class="flex items-start gap-4">
+          <div id="compress-preview-container" class="flex-shrink-0"></div>
+          <div class="flex items-center flex-1">
+            <svg class="h-8 w-8 text-red-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+            </svg>
+            <div>
+              <p class="font-medium text-gray-900">${file.name}</p>
+              <p class="text-sm text-gray-600">${pageCount} pages • ${formatFileSize(originalSize)}</p>
+            </div>
           </div>
         </div>
       `
       uploadSection.appendChild(fileInfo)
+
+      // Render preview
+      const previewContainer = document.getElementById('compress-preview-container')
+      await renderPreview(arrayBuffer, previewContainer, 150)
 
       // Show options
       document.getElementById('file-info-compress').textContent = `Original size: ${formatFileSize(originalSize)}`
