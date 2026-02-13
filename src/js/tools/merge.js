@@ -2,6 +2,7 @@ import { PDFDocument } from 'pdf-lib'
 import { validatePDF, readFileAsArrayBuffer, createDownloadLink, formatFileSize } from '../utils/file-handler.js'
 import { showError, showSuccess, showLoading, hideLoading, createUploadZone } from '../utils/ui-helpers.js'
 import { generateFileName } from '../utils/file-naming.js'
+import { renderPreview } from '../utils/preview-renderer.js'
 
 export function initMergeTool(container) {
   const uploadedFiles = []
@@ -72,29 +73,40 @@ function handleFileUpload(files, uploadedFiles, filesList) {
   updateButtonStates(uploadedFiles)
 }
 
-function addFileToList(file, uploadedFiles, filesList) {
+async function addFileToList(file, uploadedFiles, filesList) {
   const fileItem = document.createElement('div')
-  fileItem.className = 'flex items-center justify-between bg-gray-50 p-4 rounded'
+  fileItem.className = 'flex items-start justify-between bg-gray-50 p-4 rounded gap-3'
   fileItem.dataset.fileName = file.name
 
-  fileItem.innerHTML = `
-    <div class="flex items-center flex-1">
-      <svg class="h-6 w-6 text-red-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+  // Preview container
+  const previewContainer = document.createElement('div')
+  previewContainer.className = 'flex-shrink-0'
+
+  // File info
+  const fileInfo = document.createElement('div')
+  fileInfo.className = 'flex-1 min-w-0'
+  fileInfo.innerHTML = `
+    <div class="flex items-center">
+      <svg class="h-6 w-6 text-red-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
         <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
       </svg>
-      <div>
-        <p class="font-medium text-gray-900">${file.name}</p>
+      <div class="flex-1 min-w-0">
+        <p class="font-medium text-gray-900 truncate">${file.name}</p>
         <p class="text-sm text-gray-500">${formatFileSize(file.size)}</p>
       </div>
     </div>
-    <button class="remove-btn text-red-600 hover:text-red-800">
-      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    </button>
   `
 
-  fileItem.querySelector('.remove-btn').addEventListener('click', () => {
+  // Remove button
+  const removeBtn = document.createElement('button')
+  removeBtn.className = 'flex-shrink-0 text-red-600 hover:text-red-800'
+  removeBtn.innerHTML = `
+    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  `
+
+  removeBtn.addEventListener('click', () => {
     const index = uploadedFiles.findIndex(f => f.name === file.name)
     if (index > -1) {
       uploadedFiles.splice(index, 1)
@@ -103,7 +115,19 @@ function addFileToList(file, uploadedFiles, filesList) {
     updateButtonStates(uploadedFiles)
   })
 
+  fileItem.appendChild(previewContainer)
+  fileItem.appendChild(fileInfo)
+  fileItem.appendChild(removeBtn)
   filesList.appendChild(fileItem)
+
+  // Render preview asynchronously
+  try {
+    const arrayBuffer = await readFileAsArrayBuffer(file)
+    await renderPreview(arrayBuffer, previewContainer, 80)
+  } catch (error) {
+    console.error('Preview error:', error)
+    previewContainer.innerHTML = '<div class="w-20 h-20 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">No preview</div>'
+  }
 }
 
 function updateButtonStates(uploadedFiles) {
