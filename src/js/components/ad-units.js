@@ -18,15 +18,18 @@ export function createTopBannerAd() {
   return ad
 }
 
-export function createSidebarAd() {
+export function createSidebarAd(position) {
   const ad = document.createElement('div')
-  ad.className = 'sticky top-20'
+  ad.className = 'bg-gray-100 rounded-lg p-4 text-center'
   ad.innerHTML = `
-    <!-- AdSense Sidebar (300x600) -->
-    <ins class="adsbygoogle"
-         style="display:inline-block;width:300px;height:600px"
-         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-         data-ad-slot="XXXXXXXXXX"></ins>
+    <div class="text-gray-500 text-sm mb-2">Advertisement</div>
+    <div class="bg-white border-2 border-dashed border-gray-300 rounded h-[600px] flex items-center justify-center">
+      <div class="text-gray-400">
+        <p class="font-medium">300x600</p>
+        <p class="text-xs">${position} sidebar ad</p>
+        <p class="text-xs mt-2">Google AdSense</p>
+      </div>
+    </div>
   `
   return ad
 }

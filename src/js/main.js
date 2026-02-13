@@ -7,7 +7,7 @@ import { createPrivacyPage } from './pages/privacy.js'
 import { createTermsPage } from './pages/terms.js'
 import { initRouter } from './router.js'
 import { TOOLS } from './config/tools.js'
-import { createTopBannerAd, initAds } from './components/ad-units.js'
+import { createTopBannerAd, initAds, createSidebarAd } from './components/ad-units.js'
 
 console.log('PDF Tools app initializing...')
 
@@ -33,10 +33,39 @@ function showHomePage() {
   const app = document.getElementById('app')
   app.innerHTML = ''
 
+  // Header (full width)
   app.appendChild(createHeader())
+
+  // Hero (full width)
   app.appendChild(createHero())
-  app.appendChild(createTopBannerAd())
-  app.appendChild(createFeaturesGrid())
+
+  // Three-column grid container
+  const gridContainer = document.createElement('div')
+  gridContainer.className = 'container mx-auto px-4'
+
+  const threeColGrid = document.createElement('div')
+  threeColGrid.className = 'grid grid-cols-1 lg:grid-cols-[300px_1fr_300px] gap-6 items-start'
+
+  // Left sidebar ad (desktop only)
+  const leftAd = createSidebarAd('left')
+  leftAd.className = 'hidden lg:block sticky top-4'
+
+  // Center content (tools)
+  const centerContent = document.createElement('div')
+  centerContent.appendChild(createFeaturesGrid())
+
+  // Right sidebar ad (desktop only)
+  const rightAd = createSidebarAd('right')
+  rightAd.className = 'hidden lg:block sticky top-4'
+
+  threeColGrid.appendChild(leftAd)
+  threeColGrid.appendChild(centerContent)
+  threeColGrid.appendChild(rightAd)
+
+  gridContainer.appendChild(threeColGrid)
+  app.appendChild(gridContainer)
+
+  // Footer (full width)
   app.appendChild(createFooter())
 }
 
