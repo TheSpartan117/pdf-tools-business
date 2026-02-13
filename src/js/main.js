@@ -47,10 +47,18 @@ function showToolPage(params) {
   const { page, contentContainer } = createToolPage(tool)
   app.appendChild(page)
 
-  // Add placeholder content for now
-  contentContainer.innerHTML = `
-    <div class="text-center text-gray-600">
-      <p>Tool implementation coming in next tasks...</p>
-    </div>
-  `
+  // Load the specific tool
+  switch (toolId) {
+    case 'merge':
+      import('./tools/merge.js').then(module => {
+        module.initMergeTool(contentContainer)
+      })
+      break
+    default:
+      contentContainer.innerHTML = `
+        <div class="text-center text-gray-600">
+          <p>Tool implementation coming soon...</p>
+        </div>
+      `
+  }
 }
