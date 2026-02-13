@@ -7,12 +7,14 @@ import { createPrivacyPage } from './pages/privacy.js'
 import { createTermsPage } from './pages/terms.js'
 import { initRouter } from './router.js'
 import { TOOLS } from './config/tools.js'
+import { createTopBannerAd, initAds } from './components/ad-units.js'
 
 console.log('PDF Tools app initializing...')
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM ready')
   initApp()
+  initAds()
 })
 
 function initApp() {
@@ -33,6 +35,7 @@ function showHomePage() {
 
   app.appendChild(createHeader())
   app.appendChild(createHero())
+  app.appendChild(createTopBannerAd())
   app.appendChild(createFeaturesGrid())
   app.appendChild(createFooter())
 }
