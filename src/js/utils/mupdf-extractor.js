@@ -10,10 +10,23 @@
 
 // Lazy load mupdf to handle import errors gracefully
 let mupdfModule = null
+let mupdfLoadAttempted = false
 async function getMupdf() {
   if (mupdfModule) return mupdfModule
+  if (mupdfLoadAttempted) return null
+
+  mupdfLoadAttempted = true
+
   try {
-    mupdfModule = await import('mupdf')
+    // Add timeout to prevent hanging on import
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('MuPDF import timeout')), 3000)
+    )
+
+    const importPromise = import('mupdf')
+
+    mupdfModule = await Promise.race([importPromise, timeoutPromise])
+    console.log('MuPDF loaded successfully')
     return mupdfModule
   } catch (error) {
     console.warn('MuPDF failed to load:', error.message)
