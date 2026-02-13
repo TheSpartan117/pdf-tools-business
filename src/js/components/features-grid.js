@@ -1,4 +1,5 @@
 import { TOOLS } from '../config/tools.js'
+import { navigateTo } from '../router.js'
 
 export function createFeaturesGrid() {
   const section = document.createElement('section')
@@ -43,8 +44,7 @@ function createToolCard(tool) {
 
   if (tool.enabled) {
     card.addEventListener('click', () => {
-      console.log(`Opening tool: ${tool.id}`)
-      openTool(tool.id)
+      navigateTo(`tool/${tool.id}`)
     })
   } else {
     card.classList.add('opacity-50', 'cursor-not-allowed')
@@ -55,10 +55,4 @@ function createToolCard(tool) {
   }
 
   return card
-}
-
-function openTool(toolId) {
-  // For now, just show an alert
-  // We'll implement actual tool pages in next tasks
-  alert(`${toolId} tool will be implemented next!`)
 }

@@ -1,6 +1,9 @@
 import { createHeader } from './components/header.js'
 import { createHero } from './components/hero.js'
 import { createFeaturesGrid } from './components/features-grid.js'
+import { createToolPage } from './components/tool-page.js'
+import { initRouter } from './router.js'
+import { TOOLS } from './config/tools.js'
 
 console.log('PDF Tools app initializing...')
 
@@ -11,10 +14,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initApp() {
   const app = document.getElementById('app')
-  app.innerHTML = '' // Clear loading message
 
-  // Build page structure
+  // Initialize router
+  initRouter({
+    home: showHomePage,
+    tool: showToolPage
+  })
+}
+
+function showHomePage() {
+  const app = document.getElementById('app')
+  app.innerHTML = ''
+
   app.appendChild(createHeader())
   app.appendChild(createHero())
   app.appendChild(createFeaturesGrid())
+}
+
+function showToolPage(params) {
+  const app = document.getElementById('app')
+  const toolId = params[0]
+
+  const tool = TOOLS.find(t => t.id === toolId)
+
+  if (!tool) {
+    showHomePage()
+    return
+  }
+
+  app.innerHTML = ''
+
+  const { page, contentContainer } = createToolPage(tool)
+  app.appendChild(page)
+
+  // Add placeholder content for now
+  contentContainer.innerHTML = `
+    <div class="text-center text-gray-600">
+      <p>Tool implementation coming in next tasks...</p>
+    </div>
+  `
 }
