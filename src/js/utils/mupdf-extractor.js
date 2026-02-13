@@ -93,6 +93,9 @@ export function processStructuredTextBlocks(allPagesData) {
     console.log('Median font size:', medianSize)
   }
 
+  // Track images across all pages (global index)
+  let globalImageIndex = 0
+
   // Process each page
   allPagesData.forEach(pageData => {
     const { pageNumber, blocks, bbox } = pageData
@@ -144,7 +147,7 @@ export function processStructuredTextBlocks(allPagesData) {
     })
 
     // Process image blocks
-    imageBlocks.forEach((block, index) => {
+    imageBlocks.forEach((block) => {
       const yPos = block.bbox ? block.bbox[1] : 0
 
       processedContent.push({
@@ -153,8 +156,10 @@ export function processStructuredTextBlocks(allPagesData) {
         yPos,
         pageNumber,
         bbox: block.bbox,
-        imageIndex: index
+        imageIndex: globalImageIndex
       })
+
+      globalImageIndex++
     })
   })
 

@@ -43,12 +43,11 @@ async function extractImagesWithPdfJs(file, allPagesData) {
       // Extract images using existing function
       const images = await extractImagesFromPage(page)
 
-      // Map images to their indices
-      images.forEach((imageData, localIndex) => {
-        if (localIndex < imageBlocks.length) {
-          imageDataMap[globalImageIndex + localIndex] = imageData
-        }
-      })
+      // Map images (use minimum of detected blocks vs extracted images)
+      const imageCount = Math.min(images.length, imageBlocks.length)
+      for (let localIndex = 0; localIndex < imageCount; localIndex++) {
+        imageDataMap[globalImageIndex + localIndex] = images[localIndex]
+      }
 
       globalImageIndex += imageBlocks.length
     }
