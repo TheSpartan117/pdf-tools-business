@@ -117,6 +117,11 @@ function showToolPage(params) {
         module.initImagesToPdfTool(contentContainer)
       })
       break
+    case 'ocr':
+      import('./tools/ocr.js').then(module => {
+        module.initOcrTool(contentContainer)
+      })
+      break
     default:
       contentContainer.innerHTML = `
         <div class="text-center text-gray-600">
