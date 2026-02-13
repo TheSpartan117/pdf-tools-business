@@ -234,7 +234,6 @@ async function convertWithMuPDF(file, container, fileName) {
         'This PDF does not contain selectable text. It appears to be a scanned document. Please use the OCR tool first.',
         container
       )
-      mupdfDoc.destroy()
       return
     }
 
