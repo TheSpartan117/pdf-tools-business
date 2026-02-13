@@ -63,7 +63,10 @@ export function initOcrTool(container) {
     </div>
     <div id="ocr-info" class="mt-4 p-3 bg-blue-50 rounded text-blue-700"></div>
     <div class="mt-4 p-3 bg-yellow-50 rounded text-yellow-800 text-sm">
-      <strong>Note:</strong> OCR processing may take 10-30 seconds depending on file size. The result will be a searchable PDF with text layer.
+      <strong>⚠️ Important:</strong> OCR is for scanned documents or images only. Processing may take 10-30 seconds. Output file size may be larger than original.
+    </div>
+    <div class="mt-2 p-3 bg-red-50 rounded text-red-800 text-sm">
+      <strong>Warning:</strong> If your PDF already has selectable text, it does NOT need OCR. Use OCR only for scanned documents.
     </div>
   `
 

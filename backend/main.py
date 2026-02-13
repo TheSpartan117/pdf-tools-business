@@ -294,8 +294,8 @@ async def ocr_pdf(background_tasks: BackgroundTasks, file: UploadFile = File(...
     try:
         logger.info(f"Converting PDF to images for OCR: {pdf_path}")
 
-        # Convert PDF pages to images
-        images = convert_from_path(pdf_path, dpi=300)
+        # Convert PDF pages to images with lower DPI for smaller file size
+        images = convert_from_path(pdf_path, dpi=150)  # Reduced from 300 to 150 DPI
 
         # Create new PDF with OCR text layer
         pdf_document = fitz.open()
@@ -303,9 +303,9 @@ async def ocr_pdf(background_tasks: BackgroundTasks, file: UploadFile = File(...
         for i, image in enumerate(images):
             logger.info(f"OCR processing page {i + 1}/{len(images)}")
 
-            # Save image temporarily
-            img_path = tempfile.mktemp(suffix='.png')
-            image.save(img_path, 'PNG')
+            # Save image temporarily as JPEG for smaller size
+            img_path = tempfile.mktemp(suffix='.jpg')
+            image.save(img_path, 'JPEG', quality=85, optimize=True)
 
             # Perform OCR
             ocr_text = pytesseract.image_to_string(Image.open(img_path), lang=language)
@@ -322,8 +322,8 @@ async def ocr_pdf(background_tasks: BackgroundTasks, file: UploadFile = File(...
             img_pdf.close()
             os.unlink(img_path)
 
-        # Save the OCR'd PDF
-        pdf_document.save(output_pdf_path)
+        # Save the OCR'd PDF with compression
+        pdf_document.save(output_pdf_path, garbage=4, deflate=True)
         pdf_document.close()
 
         logger.info(f"OCR successful: {file.filename}")
