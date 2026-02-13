@@ -4,6 +4,14 @@ import { validatePDF, readFileAsArrayBuffer } from '../utils/file-handler.js'
 import { showError, showSuccess, showLoading, hideLoading, createUploadZone } from '../utils/ui-helpers.js'
 import { renderPreview } from '../utils/preview-renderer.js'
 import { generateFileName } from '../utils/file-naming.js'
+import {
+  isWasmSupported,
+  loadPdfWithMuPDF,
+  extractStructuredText,
+  processStructuredTextBlocks,
+  extractImages
+} from '../utils/mupdf-extractor.js'
+import { buildWordDocument, generateDocxBlob } from '../utils/word-builder.js'
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -179,80 +187,68 @@ export function initPdfToWordTool(container) {
 }
 
 /**
- * Main PDF to Word conversion function
- * Orchestrates the entire conversion process
+ * Convert PDF to Word using MuPDF.js (high quality)
+ * @param {File} file - PDF file
+ * @param {HTMLElement} container - Container for messages
+ * @param {string} fileName - Original filename
+ * @returns {Promise<void>}
  */
-async function convertPdfToWord(file, container, fileName) {
-  // Validate file exists
-  if (!file) {
-    showError('No PDF file loaded. Please upload a PDF first.', container)
-    return
-  }
-
-  showLoading(container, 'Converting PDF to Word...')
+async function convertWithMuPDF(file, container, fileName) {
+  showLoading(container, 'Loading PDF with advanced parser...')
 
   try {
     // Read file as ArrayBuffer
     const arrayBuffer = await readFileAsArrayBuffer(file)
 
-    // Load PDF document
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-    const pageCount = pdf.numPages
+    // Load PDF with MuPDF
+    const mupdfDoc = await loadPdfWithMuPDF(arrayBuffer)
+    const pageCount = mupdfDoc.countPages()
 
-    const pagesData = []
-    let totalTextLength = 0
+    // Extract structured text from all pages
+    showLoading(container, `Extracting text from ${pageCount} pages...`)
+    const allPagesData = []
 
-    // Process each page
-    for (let i = 1; i <= pageCount; i++) {
-      // Update loading message with progress
-      showLoading(container, `Processing page ${i} of ${pageCount}...`)
+    for (let i = 0; i < pageCount; i++) {
+      showLoading(container, `Processing page ${i + 1} of ${pageCount}...`)
 
-      // Get page object
-      const page = await pdf.getPage(i)
-
-      // Extract text and images
-      const paragraphs = await extractTextFromPage(page)
-      const images = await extractImagesFromPage(page)
-
-      // Track total text length
-      const pageTextLength = paragraphs.join('').length
-      totalTextLength += pageTextLength
-
-      // Store page data
-      pagesData.push({
-        pageNumber: i,
-        paragraphs,
-        images
-      })
+      const page = mupdfDoc.loadPage(i)
+      const pageData = extractStructuredText(page, i + 1)
+      allPagesData.push(pageData)
     }
 
-    // Validate PDF has selectable text
-    if (totalTextLength === 0) {
+    // Check if any text was found
+    const totalBlocks = allPagesData.reduce((sum, page) => sum + page.blocks.length, 0)
+    if (totalBlocks === 0) {
       hideLoading()
       showError(
-        'This PDF does not contain selectable text. It appears to be a scanned document. Please use the OCR tool first to convert it to a searchable PDF.',
+        'This PDF does not contain selectable text. It appears to be a scanned document. Please use the OCR tool first.',
         container
       )
-      pdf.destroy()
+      mupdfDoc.destroy()
       return
     }
 
-    // Update loading message
-    const loadingEl = document.querySelector('#loading-indicator p')
-    if (loadingEl) {
-      loadingEl.textContent = 'Building Word document...'
-    }
+    // Process structured text into formatted content
+    showLoading(container, 'Analyzing document structure...')
+    const processedContent = processStructuredTextBlocks(allPagesData)
+
+    // Extract images (placeholder for now)
+    showLoading(container, 'Extracting images...')
+    const imageDataMap = {}
+    // TODO: Implement image extraction with MuPDF or fallback to PDF.js
 
     // Build Word document
-    const doc = await buildWordDocument(pagesData)
+    showLoading(container, 'Building Word document...')
+    const doc = await buildWordDocument(processedContent, imageDataMap)
 
     // Generate .docx blob
-    if (loadingEl) {
-      loadingEl.textContent = 'Generating file...'
-    }
-    const blob = await Packer.toBlob(doc)
+    showLoading(container, 'Generating file...')
+    const blob = await generateDocxBlob(doc)
 
-    // Hide loading before download
+    // Clean up MuPDF resources
+    mupdfDoc.destroy()
+
+    // Hide loading BEFORE download
     hideLoading()
 
     // Download file
@@ -271,15 +267,139 @@ async function convertPdfToWord(file, container, fileName) {
     // Show success message
     showSuccess(`Successfully converted to Word: ${outputFileName}`, container)
 
-    // Clean up PDF
+  } catch (error) {
+    hideLoading()
+    console.error('MuPDF conversion error:', error)
+    throw error // Re-throw to be caught by fallback handler
+  }
+}
+
+/**
+ * Main PDF to Word conversion function with MuPDF and fallback
+ * @param {File} file - PDF file
+ * @param {HTMLElement} container - Container element
+ * @param {string} fileName - Original filename
+ */
+async function convertPdfToWord(file, container, fileName) {
+  // Validate file exists
+  if (!file) {
+    showError('No PDF file loaded. Please upload a PDF first.', container)
+    return
+  }
+
+  // Check WebAssembly support
+  if (!isWasmSupported()) {
+    showError('Your browser does not support advanced PDF processing. Please use Chrome, Firefox, Safari, or Edge.', container)
+    return
+  }
+
+  // Try MuPDF first, fallback to PDF.js if it fails
+  try {
+    await convertWithMuPDF(file, container, fileName)
+  } catch (mupdfError) {
+    console.warn('MuPDF conversion failed, falling back to basic mode:', mupdfError)
+
+    // Show warning about fallback
+    showLoading(container, 'Using basic conversion mode...')
+
+    try {
+      await convertWithPdfJs(file, container, fileName)
+      // Add warning banner about limited formatting
+      const warningDiv = document.createElement('div')
+      warningDiv.className = 'mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800'
+      warningDiv.textContent = 'Used basic conversion mode. Formatting may be limited.'
+      container.appendChild(warningDiv)
+    } catch (fallbackError) {
+      hideLoading()
+      console.error('Both conversion methods failed:', fallbackError)
+      showError(
+        'Failed to convert PDF to Word. Please ensure the file is a valid PDF document.',
+        container
+      )
+    }
+  }
+}
+
+/**
+ * Fallback: Convert PDF to Word using PDF.js (legacy method)
+ * @param {File} file - PDF file
+ * @param {HTMLElement} container - Container element
+ * @param {string} fileName - Original filename
+ */
+async function convertWithPdfJs(file, container, fileName) {
+  // This is the OLD implementation - keep as fallback
+  showLoading(container, 'Converting PDF to Word (basic mode)...')
+
+  try {
+    // Read file as ArrayBuffer
+    const arrayBuffer = await readFileAsArrayBuffer(file)
+
+    // Load PDF document
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+    const pageCount = pdf.numPages
+
+    const pagesData = []
+    let totalTextLength = 0
+
+    // Process each page
+    for (let i = 1; i <= pageCount; i++) {
+      showLoading(container, `Processing page ${i} of ${pageCount}...`)
+
+      const page = await pdf.getPage(i)
+      const paragraphs = await extractTextFromPage(page)
+      const images = await extractImagesFromPage(page)
+
+      const pageTextLength = paragraphs.join('').length
+      totalTextLength += pageTextLength
+
+      pagesData.push({
+        pageNumber: i,
+        paragraphs,
+        images
+      })
+    }
+
+    // Validate PDF has selectable text
+    if (totalTextLength === 0) {
+      hideLoading()
+      showError(
+        'This PDF does not contain selectable text. It appears to be a scanned document. Please use the OCR tool first.',
+        container
+      )
+      pdf.destroy()
+      return
+    }
+
+    // Build Word document (using old simple method)
+    showLoading(container, 'Building Word document...')
+    const doc = await buildWordDocumentLegacy(pagesData)
+
+    // Generate .docx blob
+    showLoading(container, 'Generating file...')
+    const blob = await Packer.toBlob(doc)
+
+    // Hide loading BEFORE download
+    hideLoading()
+
+    // Download file
+    const outputFileName = generateFileName(fileName, 'to-word', 'docx')
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = outputFileName
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+
+    setTimeout(() => URL.revokeObjectURL(url), 100)
+
+    showSuccess(`Successfully converted to Word: ${outputFileName}`, container)
+
     pdf.destroy()
   } catch (error) {
     hideLoading()
     console.error('Error converting PDF to Word:', error)
-    showError(
-      'Failed to convert PDF to Word. Please ensure the file is a valid PDF document.',
-      container
-    )
+    throw error
   }
 }
 
@@ -413,11 +533,11 @@ async function extractImagesFromPage(page) {
 }
 
 /**
- * Build Word document from extracted page data
+ * Build Word document from extracted page data (legacy method)
  * @param {Array} pagesData - Array of { pageNumber, paragraphs[], images[] }
  * @returns {Document} - docx Document object
  */
-async function buildWordDocument(pagesData) {
+async function buildWordDocumentLegacy(pagesData) {
   const children = []
 
   for (const pageData of pagesData) {
