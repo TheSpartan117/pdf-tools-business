@@ -357,47 +357,24 @@ async function convertPdfToWord(file, container, fileName) {
     return
   }
 
-  // Check WebAssembly and MuPDF support
-  const wasmSupported = await isWasmSupported()
+  // TEMPORARILY DISABLED: MuPDF is not working properly in browser
+  // Skip straight to PDF.js conversion
+  console.log('Using PDF.js converter (MuPDF disabled)')
 
-  if (!wasmSupported) {
-    console.warn('MuPDF not available, using PDF.js fallback directly')
-    // Use PDF.js directly
-    try {
-      await convertWithPdfJs(file, container, fileName)
-      // Add info banner about basic mode
-      const infoDiv = document.createElement('div')
-      infoDiv.className = 'mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800'
-      infoDiv.textContent = 'Used basic conversion mode. For better formatting, please use a modern browser (Chrome, Firefox, Safari, or Edge).'
-      container.appendChild(infoDiv)
-    } catch (error) {
-      hideLoading()
-      showError(`Conversion failed: ${error.message}`, container)
-    }
-    return
-  }
-
-  // Try MuPDF first, fallback to PDF.js if it fails
   try {
-    await convertWithMuPDF(file, container, fileName)
-  } catch (mupdfError) {
-    console.warn('MuPDF conversion failed, falling back to basic mode:', mupdfError)
-
-    // Show warning about fallback
-    showLoading(container, 'Using basic conversion mode...')
-
-    try {
-      await convertWithPdfJs(file, container, fileName)
-      // Add warning banner about limited formatting
-      const warningDiv = document.createElement('div')
-      warningDiv.className = 'mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800'
-      warningDiv.textContent = 'Used basic conversion mode. Formatting may be limited.'
-      container.appendChild(warningDiv)
-    } catch (fallbackError) {
-      hideLoading()
-      console.error('Both conversion methods failed:', {
-        mupdfError: mupdfError.message,
-        fallbackError: fallbackError.message
+    await convertWithPdfJs(file, container, fileName)
+    // Add info banner about basic mode
+    const infoDiv = document.createElement('div')
+    infoDiv.className = 'mt-4 p-3 bg-blue-50 border border-blue-400 rounded text-sm text-blue-700'
+    infoDiv.innerHTML = `
+      <strong>Note:</strong> This is a basic conversion. Text is extracted line-by-line.
+      For better formatting preservation, professional PDF conversion services are recommended.
+    `
+    container.appendChild(infoDiv)
+  } catch (error) {
+    hideLoading()
+    console.error('Conversion failed:', error)
+    showError(`Conversion failed: ${error.message}`, container)
       })
       showError(
         'Failed to convert PDF to Word. Please ensure the file is a valid PDF document.',
@@ -414,20 +391,15 @@ async function convertPdfToWord(file, container, fileName) {
  * @param {string} fileName - Original filename
  */
 async function convertWithPdfJs(file, container, fileName) {
-  // This is the OLD implementation - keep as fallback
-  window.DEBUG_CONVERSION = true
-  console.error('=== CONVERSION STARTED ===')
-  alert('Conversion started - check console')
-  showLoading(container, 'Converting PDF to Word (basic mode)...')
+  // Basic PDF.js conversion
+  console.log('Starting PDF.js conversion')
+  showLoading(container, 'Converting PDF to Word...')
 
   try {
     // Read file as ArrayBuffer
-    console.error('Reading file...')
     const arrayBuffer = await readFileAsArrayBuffer(file)
-    console.error('File read successfully, size:', arrayBuffer.byteLength)
 
     // Load PDF document
-    console.log('Loading PDF with PDF.js...')
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
     const pageCount = pdf.numPages
     console.log('PDF loaded, pages:', pageCount)
