@@ -59,6 +59,11 @@ function showToolPage(params) {
         module.initSplitTool(contentContainer)
       })
       break
+    case 'compress':
+      import('./tools/compress.js').then(module => {
+        module.initCompressTool(contentContainer)
+      })
+      break
     default:
       contentContainer.innerHTML = `
         <div class="text-center text-gray-600">
