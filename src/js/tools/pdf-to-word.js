@@ -173,3 +173,63 @@ export function initPdfToWordTool(container) {
 function convertPdfToWord(file, container, fileName) {
   console.log('Convert to Word:', fileName)
 }
+
+/**
+ * Extract text from a PDF page and group into paragraphs
+ */
+async function extractTextFromPage(page) {
+  const textContent = await page.getTextContent()
+
+  if (!textContent.items || textContent.items.length === 0) {
+    return []
+  }
+
+  // Group text items by Y position (line detection)
+  const lines = []
+  let currentLine = null
+
+  textContent.items.forEach((item) => {
+    const y = item.transform[5] // Y coordinate
+    const text = item.str
+
+    if (!text.trim()) return
+
+    // Check if this item belongs to the current line (within 2px tolerance)
+    if (currentLine && Math.abs(currentLine.y - y) < 2) {
+      // Add space between items on the same line if needed
+      if (currentLine.text && !currentLine.text.endsWith(' ') && !text.startsWith(' ')) {
+        currentLine.text += ' '
+      }
+      currentLine.text += text
+    } else {
+      // Start a new line
+      if (currentLine) {
+        lines.push(currentLine)
+      }
+      currentLine = { y, text }
+    }
+  })
+
+  // Push the last line
+  if (currentLine) {
+    lines.push(currentLine)
+  }
+
+  // Group lines into paragraphs based on vertical spacing
+  const paragraphs = []
+  let currentParagraph = []
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    const nextLine = lines[i + 1]
+
+    currentParagraph.push(line.text)
+
+    // Check if there's a significant gap to the next line (paragraph break)
+    if (!nextLine || Math.abs(line.y - nextLine.y) > 10) {
+      paragraphs.push(currentParagraph.join(' ').trim())
+      currentParagraph = []
+    }
+  }
+
+  return paragraphs.length > 0 ? paragraphs : lines.map(l => l.text)
