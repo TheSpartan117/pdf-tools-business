@@ -107,6 +107,11 @@ function showToolPage(params) {
         module.initRotateTool(contentContainer)
       })
       break
+    case 'pdf-to-images':
+      import('./tools/pdf-to-images.js').then(module => {
+        module.initPdfToImagesTool(contentContainer)
+      })
+      break
     default:
       contentContainer.innerHTML = `
         <div class="text-center text-gray-600">
