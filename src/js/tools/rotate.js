@@ -6,7 +6,10 @@ import { renderPreview } from '../utils/preview-renderer.js'
 import * as pdfjsLib from 'pdfjs-dist'
 
 // Configure PDF.js worker for rotation preview
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).href
 
 async function updateRotationPreview(pdfData, angle, container) {
   try {
