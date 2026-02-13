@@ -1,6 +1,7 @@
 import { PDFDocument } from 'pdf-lib'
 import { validatePDF, readFileAsArrayBuffer, createDownloadLink, formatFileSize } from '../utils/file-handler.js'
 import { showError, showSuccess, showLoading, hideLoading, createUploadZone } from '../utils/ui-helpers.js'
+import { generateFileName } from '../utils/file-naming.js'
 
 export function initCompressTool(container) {
   let uploadedFile = null
@@ -108,6 +109,8 @@ export function initCompressTool(container) {
 
       uploadedFile = file
       originalSize = file.size
+      // Store filename for later use in compress function
+      window.currentUploadedFileName = file.name
       const arrayBuffer = await readFileAsArrayBuffer(file)
       pdfDoc = await PDFDocument.load(arrayBuffer)
       const pageCount = pdfDoc.getPageCount()
@@ -175,18 +178,33 @@ async function compressPDF(pdfDoc, level, originalSize, container) {
 
     const compressedBytes = await pdfDoc.save(saveOptions)
     const compressedSize = compressedBytes.length
-    const reduction = ((originalSize - compressedSize) / originalSize * 100).toFixed(1)
-
-    const blob = new Blob([compressedBytes], { type: 'application/pdf' })
 
     hideLoading()
-    createDownloadLink(blob, 'compressed.pdf')
 
-    if (compressedSize < originalSize) {
-      showSuccess(`PDF compressed! Size reduced by ${reduction}% (${formatFileSize(originalSize)} → ${formatFileSize(compressedSize)})`, container)
-    } else {
-      showSuccess(`PDF processed. Original size: ${formatFileSize(originalSize)}, New size: ${formatFileSize(compressedSize)}. Note: Some PDFs are already optimized and cannot be compressed further.`, container)
+    // Only download if compression actually reduced file size
+    if (compressedSize >= originalSize) {
+      showError(
+        `Compression didn't reduce file size. Original: ${formatFileSize(originalSize)}, ` +
+        `Result: ${formatFileSize(compressedSize)}. This PDF may already be optimized. ` +
+        `Try a different compression level or use an already uncompressed PDF.`,
+        container
+      )
+      return
     }
+
+    // File was successfully compressed
+    const reduction = ((originalSize - compressedSize) / originalSize * 100).toFixed(1)
+    const blob = new Blob([compressedBytes], { type: 'application/pdf' })
+
+    // Use original filename with task suffix
+    const filename = generateFileName(window.currentUploadedFileName || 'document.pdf', 'compressed')
+    createDownloadLink(blob, filename)
+
+    showSuccess(
+      `PDF compressed successfully! Size reduced by ${reduction}% ` +
+      `(${formatFileSize(originalSize)} → ${formatFileSize(compressedSize)})`,
+      container
+    )
 
   } catch (error) {
     hideLoading()
