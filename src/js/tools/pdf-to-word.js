@@ -237,12 +237,23 @@ async function convertPdfToWord(file, container, fileName) {
       return
     }
 
+    // Update loading message
+    const loadingEl = document.querySelector('#loading-indicator p')
+    if (loadingEl) {
+      loadingEl.textContent = 'Building Word document...'
+    }
+
     // Build Word document
-    showLoading(container, 'Building Word document...')
     const doc = await buildWordDocument(pagesData)
 
     // Generate .docx blob
+    if (loadingEl) {
+      loadingEl.textContent = 'Generating file...'
+    }
     const blob = await Packer.toBlob(doc)
+
+    // Hide loading before download
+    hideLoading()
 
     // Download file
     const outputFileName = generateFileName(fileName, 'to-word', 'docx')
@@ -250,13 +261,14 @@ async function convertPdfToWord(file, container, fileName) {
     const a = document.createElement('a')
     a.href = url
     a.download = outputFileName
+    document.body.appendChild(a)
     a.click()
+    document.body.removeChild(a)
 
     // Cleanup
     setTimeout(() => URL.revokeObjectURL(url), 100)
 
     // Show success message
-    hideLoading()
     showSuccess(`Successfully converted to Word: ${outputFileName}`, container)
 
     // Clean up PDF
@@ -323,8 +335,9 @@ async function extractTextFromPage(page) {
     currentParagraph.push(line.text)
 
     // Check if there's a significant gap to the next line (paragraph break)
-    if (!nextLine || Math.abs(line.y - nextLine.y) > 10) {
-      paragraphs.push(currentParagraph.join(' ').trim())
+    if (!nextLine || Math.abs(line.y - nextLine.y) > 15) {
+      // Keep each line separate for better formatting (preserve line breaks)
+      paragraphs.push(...currentParagraph.map(t => t.trim()).filter(t => t))
       currentParagraph = []
     }
   }
@@ -417,16 +430,21 @@ async function buildWordDocument(pagesData) {
       })
     )
 
-    // Add text paragraphs
+    // Add text paragraphs (each line as separate paragraph for better formatting)
     for (const paragraphText of pageData.paragraphs) {
       if (paragraphText.trim()) {
         children.push(
           new Paragraph({
             children: [new TextRun(paragraphText)],
-            spacing: { after: 120 }
+            spacing: { after: 80 } // Less spacing since each line is a paragraph now
           })
         )
       }
+    }
+
+    // Add spacing between major sections
+    if (pageData.paragraphs.length > 0 && pageData.images.length === 0) {
+      children.push(new Paragraph({ spacing: { after: 200 } }))
     }
 
     // Add images
