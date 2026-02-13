@@ -3,12 +3,55 @@ import { validatePDF, readFileAsArrayBuffer, createDownloadLink } from '../utils
 import { showError, showSuccess, showLoading, hideLoading, createUploadZone } from '../utils/ui-helpers.js'
 import { generateFileName } from '../utils/file-naming.js'
 import { renderPreview } from '../utils/preview-renderer.js'
+import * as pdfjsLib from 'pdfjs-dist'
+
+// Configure PDF.js worker for rotation preview
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+
+async function updateRotationPreview(pdfData, angle, container) {
+  try {
+    const loadingTask = pdfjsLib.getDocument({ data: pdfData })
+    const pdf = await loadingTask.promise
+    const page = await pdf.getPage(1)
+
+    // Calculate viewport with rotation
+    const viewport = page.getViewport({ scale: 1.0, rotation: angle })
+    const scale = 250 / Math.max(viewport.width, viewport.height)
+    const scaledViewport = page.getViewport({ scale, rotation: angle })
+
+    const canvas = document.createElement('canvas')
+    canvas.className = 'border border-gray-300 rounded shadow-sm transition-all duration-300'
+    const context = canvas.getContext('2d')
+
+    if (!context) {
+      throw new Error('Could not get canvas 2D context')
+    }
+
+    canvas.width = scaledViewport.width
+    canvas.height = scaledViewport.height
+
+    await page.render({
+      canvasContext: context,
+      viewport: scaledViewport
+    }).promise
+
+    // Clean up PDF.js resources
+    pdf.destroy()
+
+    container.innerHTML = ''
+    container.appendChild(canvas)
+
+  } catch (error) {
+    console.error('Preview error:', error)
+  }
+}
 
 export function initRotateTool(container) {
   let uploadedFile = null
   let pdfDoc = null
   let uploadedFileName = ''
   let arrayBuffer = null
+  let originalArrayBuffer = null
 
   const content = document.createElement('div')
   content.className = 'max-w-4xl mx-auto'
@@ -97,10 +140,16 @@ export function initRotateTool(container) {
 
   const rotateButtons = optionsSection.querySelectorAll('.rotate-btn')
   rotateButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       rotateButtons.forEach(b => b.classList.remove('bg-blue-600', 'text-white'))
       btn.classList.add('bg-blue-600', 'text-white')
       selectedAngle = parseInt(btn.dataset.angle)
+
+      // Update preview with rotation in real-time
+      const previewContainer = document.getElementById('rotate-preview-container')
+      if (previewContainer && originalArrayBuffer) {
+        await updateRotationPreview(originalArrayBuffer, selectedAngle, previewContainer)
+      }
 
       document.getElementById('selected-rotation').textContent = `Selected: ${selectedAngle}° rotation`
       document.getElementById('selected-rotation').classList.remove('hidden')
@@ -137,6 +186,7 @@ export function initRotateTool(container) {
     uploadedFile = null
     pdfDoc = null
     selectedAngle = null
+    originalArrayBuffer = null
     uploadSection.querySelector('.upload-zone').classList.remove('hidden')
     uploadSection.querySelector('#file-info')?.remove()
     optionsSection.classList.add('hidden')
@@ -159,6 +209,7 @@ export function initRotateTool(container) {
       uploadedFile = file
       uploadedFileName = file.name
       arrayBuffer = await readFileAsArrayBuffer(file)
+      originalArrayBuffer = arrayBuffer
       pdfDoc = await PDFDocument.load(arrayBuffer)
       const pageCount = pdfDoc.getPageCount()
 
@@ -186,9 +237,9 @@ export function initRotateTool(container) {
       `
       uploadSection.appendChild(fileInfo)
 
-      // Render preview
+      // Render initial preview at 0° rotation
       const previewContainer = document.getElementById('rotate-preview-container')
-      await renderPreview(arrayBuffer, previewContainer, 150)
+      await updateRotationPreview(originalArrayBuffer, 0, previewContainer)
 
       // Show options
       document.getElementById('file-info-rotate').textContent = `Total pages: ${pageCount}`
