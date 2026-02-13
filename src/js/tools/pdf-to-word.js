@@ -132,21 +132,17 @@ export function initPdfToWordTool(container) {
       uploadedFile = file
       uploadedFileName = file.name
 
-      // Read file
-      const arrayBuffer = await readFileAsArrayBuffer(file)
+      // Read file FIRST time - for getting page count
+      const arrayBuffer1 = await readFileAsArrayBuffer(file)
 
       // Load PDF to get page count
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer1 }).promise
       const pageCount = pdf.numPages
 
       // Clean up
       pdf.destroy()
 
       hideLoading()
-
-      // Store file data
-      uploadedFile = arrayBuffer
-      uploadedFileName = file.name
 
       // Hide upload zone
       uploadSection.querySelector('.upload-zone').classList.add('hidden')
@@ -168,9 +164,12 @@ export function initPdfToWordTool(container) {
 
       uploadSection.appendChild(fileInfo)
 
+      // Read file SECOND time - for preview (first ArrayBuffer was detached by PDF.js)
+      const arrayBuffer2 = await readFileAsArrayBuffer(file)
+
       // Render preview
       const previewContainer = document.getElementById('pdf-to-word-preview')
-      await renderPreview(arrayBuffer, previewContainer, { maxHeight: 150 })
+      await renderPreview(arrayBuffer2, previewContainer, 150)
 
       // Show action buttons
       const actionsSection = document.getElementById('action-buttons-pdf-to-word')
