@@ -7,6 +7,7 @@ export function initCompressTool(container) {
   let uploadedFile = null
   let pdfDoc = null
   let originalSize = 0
+  let uploadedFileName = ''
 
   const content = document.createElement('div')
   content.className = 'max-w-4xl mx-auto'
@@ -90,6 +91,7 @@ export function initCompressTool(container) {
     uploadedFile = null
     pdfDoc = null
     originalSize = 0
+    uploadedFileName = ''
     uploadSection.querySelector('.upload-zone').classList.remove('hidden')
     uploadSection.querySelector('#file-info')?.remove()
     optionsSection.classList.add('hidden')
@@ -110,7 +112,7 @@ export function initCompressTool(container) {
       uploadedFile = file
       originalSize = file.size
       // Store filename for later use in compress function
-      window.currentUploadedFileName = file.name
+      uploadedFileName = file.name
       const arrayBuffer = await readFileAsArrayBuffer(file)
       pdfDoc = await PDFDocument.load(arrayBuffer)
       const pageCount = pdfDoc.getPageCount()
@@ -197,7 +199,7 @@ async function compressPDF(pdfDoc, level, originalSize, container) {
     const blob = new Blob([compressedBytes], { type: 'application/pdf' })
 
     // Use original filename with task suffix
-    const filename = generateFileName(window.currentUploadedFileName || 'document.pdf', 'compressed')
+    const filename = generateFileName(uploadedFileName || 'document.pdf', 'compressed')
     createDownloadLink(blob, filename)
 
     showSuccess(
