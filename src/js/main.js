@@ -118,9 +118,26 @@ function showToolPage(params) {
       })
       break
     case 'pdf-to-word':
-      import('./tools/pdf-to-word.js').then(module => {
-        module.initPdfToWordTool(contentContainer)
-      })
+      import('./tools/pdf-to-word.js')
+        .then(module => {
+          module.initPdfToWordTool(contentContainer)
+        })
+        .catch(error => {
+          console.error('Failed to load PDF to Word tool:', error)
+          contentContainer.innerHTML = `
+            <div class="bg-red-50 border-l-4 border-red-400 p-4">
+              <div class="flex">
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-red-800">Failed to load PDF to Word tool</h3>
+                  <div class="mt-2 text-sm text-red-700">
+                    <p>Error: ${error.message}</p>
+                    <p class="mt-2">Please check the browser console for details.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `
+        })
       break
     case 'word-to-pdf':
       import('./tools/word-to-pdf.js').then(module => {
