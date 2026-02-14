@@ -10,6 +10,7 @@ import { TOOLS } from './config/tools.js'
 import { createTopBannerAd, initAds, createSidebarAd } from './components/ad-units.js'
 import { updateMetaTags } from './utils/seo.js'
 import { removeToolSchema } from './utils/schema.js'
+import { removeFAQSchema } from './components/faq-section.js'
 
 console.log('PDF Tools app initializing...')
 
@@ -34,6 +35,7 @@ function initApp() {
 function showHomePage() {
   updateMetaTags('home')
   removeToolSchema()
+  removeFAQSchema()
   const app = document.getElementById('app')
   app.innerHTML = ''
 
@@ -167,6 +169,7 @@ function showToolPage(params) {
 function showPrivacyPage() {
   updateMetaTags('privacy')
   removeToolSchema()
+  removeFAQSchema()
   const app = document.getElementById('app')
   app.innerHTML = ''
 
@@ -176,6 +179,7 @@ function showPrivacyPage() {
 function showTermsPage() {
   updateMetaTags('terms')
   removeToolSchema()
+  removeFAQSchema()
   const app = document.getElementById('app')
   app.innerHTML = ''
 

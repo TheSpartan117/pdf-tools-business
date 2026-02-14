@@ -115,8 +115,8 @@ export function generateToolSchema(toolId) {
  * @param {string} toolId
  */
 export function injectToolSchema(toolId) {
-  // Remove existing schema
-  const existing = document.querySelector('script[type="application/ld+json"]')
+  // Remove existing tool schema
+  const existing = document.querySelector('script[data-schema-type="tool"]')
   if (existing) {
     existing.remove()
   }
@@ -126,6 +126,7 @@ export function injectToolSchema(toolId) {
 
   const script = document.createElement('script')
   script.type = 'application/ld+json'
+  script.setAttribute('data-schema-type', 'tool')
   script.textContent = JSON.stringify(schema)
   document.head.appendChild(script)
 }
@@ -135,7 +136,7 @@ export function injectToolSchema(toolId) {
  * Called when navigating to non-tool pages
  */
 export function removeToolSchema() {
-  const existing = document.querySelector('script[type="application/ld+json"]')
+  const existing = document.querySelector('script[data-schema-type="tool"]')
   if (existing) {
     existing.remove()
   }
