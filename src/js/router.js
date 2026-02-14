@@ -21,7 +21,16 @@ function handleRouteChange() {
 
   currentRoute = route
 
-  if (routes[route]) {
+  // Handle blog routes specially
+  if (route === 'blog') {
+    if (params.length > 0) {
+      // Blog post page
+      routes['blogPost'](params[0])
+    } else {
+      // Blog list page
+      routes['blog']()
+    }
+  } else if (routes[route]) {
     routes[route](params)
   } else {
     routes['home']()

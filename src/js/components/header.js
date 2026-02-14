@@ -10,9 +10,10 @@ export function createHeader() {
         <span class="text-xl font-bold text-gray-900">PDF Tools</span>
       </div>
       <div class="hidden md:flex items-center space-x-6">
-        <a href="#features" class="text-gray-600 hover:text-gray-900">Features</a>
-        <a href="#privacy" class="text-gray-600 hover:text-gray-900">Privacy</a>
-        <a href="#about" class="text-gray-600 hover:text-gray-900">About</a>
+        <a href="#/" class="text-gray-600 hover:text-gray-900">Home</a>
+        <a href="#/blog" class="text-gray-600 hover:text-gray-900">Blog</a>
+        <a href="#/privacy" class="text-gray-600 hover:text-gray-900">Privacy</a>
+        <a href="#/terms" class="text-gray-600 hover:text-gray-900">Terms</a>
       </div>
       <button id="mobile-menu-btn" class="md:hidden">
         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

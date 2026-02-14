@@ -5,6 +5,8 @@ import { createFooter } from './components/footer.js'
 import { createToolPage } from './components/tool-page.js'
 import { createPrivacyPage } from './pages/privacy.js'
 import { createTermsPage } from './pages/terms.js'
+import { createBlogPage } from './pages/blog.js'
+import { createBlogPostPage } from './pages/blog-post.js'
 import { initRouter } from './router.js'
 import { TOOLS } from './config/tools.js'
 import { createTopBannerAd, initAds, createSidebarAd } from './components/ad-units.js'
@@ -27,6 +29,8 @@ function initApp() {
   initRouter({
     home: showHomePage,
     tool: showToolPage,
+    blog: showBlogPage,
+    blogPost: showBlogPostPage,
     privacy: showPrivacyPage,
     terms: showTermsPage
   })
@@ -184,4 +188,20 @@ function showTermsPage() {
   app.innerHTML = ''
 
   app.appendChild(createTermsPage())
+}
+
+function showBlogPage() {
+  removeToolSchema()
+  removeFAQSchema()
+  const app = document.getElementById('app')
+  app.innerHTML = ''
+  app.appendChild(createBlogPage())
+}
+
+function showBlogPostPage(postId) {
+  removeToolSchema()
+  removeFAQSchema()
+  const app = document.getElementById('app')
+  app.innerHTML = ''
+  app.appendChild(createBlogPostPage(postId))
 }
