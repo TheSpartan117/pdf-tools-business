@@ -1,7 +1,7 @@
 import { showError, showSuccess, showLoading, hideLoading, createUploadZone } from '../utils/ui-helpers.js'
 
 // Backend API URL
-const API_URL = 'https://pdf-tools-api-0m15.onrender.com'
+const API_URL = 'https://pdf-tools-business.onrender.com'
 
 export function initWordToPdfTool(container) {
   let uploadedFile = null

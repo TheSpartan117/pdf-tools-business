@@ -4,7 +4,7 @@ import { showError, showSuccess, showLoading, hideLoading, createUploadZone } fr
 import { renderPreview } from '../utils/preview-renderer.js'
 
 // Backend API URL
-const API_URL = 'https://pdf-tools-api-0m15.onrender.com'
+const API_URL = 'https://pdf-tools-business.onrender.com'
 
 // Configure PDF.js worker (for preview only)
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(

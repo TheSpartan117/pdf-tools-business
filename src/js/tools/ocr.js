@@ -172,7 +172,7 @@ async function performOCR(file, fileName, language, container) {
     showLoading(container, 'Performing OCR with backend API... This may take 10-30 seconds')
 
     // Use backend API for OCR
-    const API_URL = 'https://pdf-tools-api-0m15.onrender.com'
+    const API_URL = 'https://pdf-tools-business.onrender.com'
 
     const formData = new FormData()
     formData.append('file', file)
