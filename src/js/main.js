@@ -8,6 +8,7 @@ import { createTermsPage } from './pages/terms.js'
 import { initRouter } from './router.js'
 import { TOOLS } from './config/tools.js'
 import { createTopBannerAd, initAds, createSidebarAd } from './components/ad-units.js'
+import { updateMetaTags } from './utils/seo.js'
 
 console.log('PDF Tools app initializing...')
 
@@ -30,6 +31,7 @@ function initApp() {
 }
 
 function showHomePage() {
+  updateMetaTags('home')
   const app = document.getElementById('app')
   app.innerHTML = ''
 
@@ -79,6 +81,8 @@ function showToolPage(params) {
     showHomePage()
     return
   }
+
+  updateMetaTags(toolId)
 
   app.innerHTML = ''
 
