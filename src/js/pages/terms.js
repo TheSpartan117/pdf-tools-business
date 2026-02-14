@@ -42,7 +42,7 @@ export function createTermsPage() {
           </p>
           <ul class="list-disc pl-6 text-gray-700 mb-4">
             <li>Maximum file size: 50MB per file</li>
-            <li>Processing is performed locally in your browser</li>
+            <li>Most tools process locally; some use secure server processing</li>
             <li>Large files may require more processing time</li>
           </ul>
         </section>

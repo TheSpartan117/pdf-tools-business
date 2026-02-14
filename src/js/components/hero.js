@@ -32,8 +32,8 @@ export function createHero() {
 
         <!-- Description -->
         <p class="text-base md:text-lg text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-          Merge, split, compress, and convert PDFs instantly in your browser.
-          Your files stay private – everything processes locally on your device.
+          Merge, split, compress, and convert PDFs with professional quality.
+          Most tools process locally in your browser for maximum privacy.
         </p>
 
         <!-- Feature Pills -->
@@ -42,7 +42,7 @@ export function createHero() {
             <svg class="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
             </svg>
-            <span class="font-semibold text-gray-700 text-sm">100% Secure</span>
+            <span class="font-semibold text-gray-700 text-sm">Secure & Private</span>
           </div>
 
           <div class="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm border border-blue-100">

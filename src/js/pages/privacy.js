@@ -17,22 +17,43 @@ export function createPrivacyPage() {
         <section class="mb-8">
           <h2 class="text-2xl font-semibold text-gray-900 mb-4">Your Privacy Matters</h2>
           <p class="text-gray-700 mb-4">
-            At PDF Tools, your privacy is our top priority. We've built our entire platform
-            around the principle of client-side processing to ensure your files remain private and secure.
+            At PDF Tools, your privacy is our top priority. We use a combination of client-side
+            and secure server-side processing to provide the best quality results while protecting your privacy.
           </p>
         </section>
 
         <section class="mb-8">
-          <h2 class="text-2xl font-semibold text-gray-900 mb-4">Client-Side Processing</h2>
-          <p class="text-gray-700 mb-4">
-            All PDF processing happens directly in your browser using JavaScript. This means:
+          <h2 class="text-2xl font-semibold text-gray-900 mb-4">How We Process Your Files</h2>
+
+          <h3 class="text-xl font-semibold text-gray-900 mb-3 mt-4">Client-Side Tools (Browser-Based)</h3>
+          <p class="text-gray-700 mb-2">
+            Most tools process files directly in your browser:
           </p>
           <ul class="list-disc pl-6 text-gray-700 mb-4">
+            <li><strong>Merge, Split, Rotate, Compress PDFs</strong> - Process locally in your browser</li>
+            <li><strong>Images to PDF, PDF to Images</strong> - Process locally in your browser</li>
             <li>Your files never leave your device</li>
-            <li>We never see, store, or transmit your documents</li>
-            <li>Processing works even without an internet connection</li>
-            <li>Your data stays completely private</li>
+            <li>Works offline after initial page load</li>
+            <li>Instant processing with complete privacy</li>
           </ul>
+
+          <h3 class="text-xl font-semibold text-gray-900 mb-3 mt-4">Server-Side Tools (Professional Quality)</h3>
+          <p class="text-gray-700 mb-2">
+            Some tools require server processing for professional-quality results:
+          </p>
+          <ul class="list-disc pl-6 text-gray-700 mb-4">
+            <li><strong>PDF to Word, Word to PDF</strong> - High-fidelity format conversion</li>
+            <li><strong>OCR (Text Extraction)</strong> - Advanced optical character recognition</li>
+            <li>Files are uploaded securely via HTTPS</li>
+            <li>Processed and immediately deleted from server</li>
+            <li>No files are stored or logged</li>
+            <li>Processing typically takes 10-30 seconds</li>
+          </ul>
+
+          <p class="text-gray-700 mb-4 mt-4">
+            <strong>Our commitment:</strong> Whether processed client-side or server-side, we never store,
+            view, or retain your documents. Server-processed files are automatically deleted immediately after conversion.
+          </p>
         </section>
 
         <section class="mb-8">

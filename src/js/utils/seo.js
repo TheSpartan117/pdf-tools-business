@@ -71,7 +71,7 @@ export const SEO_CONFIG = {
   },
   'privacy': {
     title: 'Privacy Policy - Free PDF Tools',
-    description: 'Privacy policy for Free PDF Tools. Learn how we handle your data and protect your privacy. No data collection, 100% client-side processing.',
+    description: 'Privacy policy for Free PDF Tools. Learn how we handle your data and protect your privacy. Secure processing with no file storage.',
     keywords: 'privacy policy, data protection, privacy, pdf tools privacy',
     h1: 'Privacy Policy'
   },
