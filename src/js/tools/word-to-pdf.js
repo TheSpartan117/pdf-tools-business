@@ -1,8 +1,7 @@
-import mammoth from 'mammoth'
-import { jsPDF } from 'jspdf'
-import html2canvas from 'html2canvas'
 import { showError, showSuccess, showLoading, hideLoading, createUploadZone } from '../utils/ui-helpers.js'
-import { generateFileName } from '../utils/file-naming.js'
+
+// Backend API URL
+const API_URL = 'https://pdf-tools-api-0m15.onrender.com'
 
 export function initWordToPdfTool(container) {
   let uploadedFile = null
@@ -11,10 +10,10 @@ export function initWordToPdfTool(container) {
   const content = document.createElement('div')
   content.className = 'max-w-4xl mx-auto'
 
-  // Warning banner
-  const warningBanner = document.createElement('div')
-  warningBanner.className = 'bg-blue-50 border-l-4 border-blue-400 p-4 mb-6'
-  warningBanner.innerHTML = `
+  // Info banner
+  const infoBanner = document.createElement('div')
+  infoBanner.className = 'bg-blue-50 border-l-4 border-blue-400 p-4 mb-6'
+  infoBanner.innerHTML = `
     <div class="flex">
       <div class="flex-shrink-0">
         <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
@@ -22,19 +21,19 @@ export function initWordToPdfTool(container) {
         </svg>
       </div>
       <div class="ml-3">
-        <h3 class="text-sm font-medium text-blue-800">Conversion Information</h3>
+        <h3 class="text-sm font-medium text-blue-800">Professional Word to PDF Conversion</h3>
         <div class="mt-2 text-sm text-blue-700">
           <ul class="list-disc list-inside space-y-1">
-            <li>Basic formatting (bold, italic, headings) will be preserved</li>
-            <li>Images will be included in the PDF</li>
-            <li>Complex layouts may be simplified</li>
-            <li>Fonts may differ from the original document</li>
+            <li><strong>High-fidelity conversion</strong> - Preserves original formatting</li>
+            <li>Maintains fonts, colors, and text styling</li>
+            <li>Preserves tables, lists, and document structure</li>
+            <li>Includes images in correct positions</li>
+            <li>Converts headers, footers, and page layouts</li>
           </ul>
         </div>
       </div>
     </div>
   `
-  content.appendChild(warningBanner)
 
   // Upload section
   const uploadSection = document.createElement('div')
@@ -67,6 +66,7 @@ export function initWordToPdfTool(container) {
 
   uploadSection.appendChild(uploadZone)
   content.appendChild(uploadSection)
+  content.appendChild(infoBanner)
 
   // Action buttons
   const actionButtons = document.createElement('div')
@@ -173,114 +173,79 @@ function validateWordFile(file) {
   return hasValidType || hasValidExtension
 }
 
+/**
+ * Convert Word to PDF using backend API
+ */
 async function convertWordToPdf(file, container, fileName) {
+  if (!file) {
+    showError('No Word file loaded. Please upload a Word document first.', container)
+    return
+  }
+
+  showLoading(container, 'Uploading Word document to server...')
+
   try {
-    // Step 1: Validate file exists
-    if (!file) {
-      showError('No file selected', container)
-      return
-    }
+    // Create form data
+    const formData = new FormData()
+    formData.append('file', file)
 
-    // Step 2: Show loading "Converting Word to HTML..."
-    showLoading(container, 'Converting Word to HTML...')
+    // Call backend API for Word to PDF conversion
+    showLoading(container, 'Converting Word to PDF (this may take 10-30 seconds)...')
 
-    // Step 3: Read file as arrayBuffer
-    const arrayBuffer = await file.arrayBuffer()
-
-    // Step 4: Use mammoth.convertToHtml to get HTML
-    const result = await mammoth.convertToHtml({ arrayBuffer })
-    const html = result.value
-
-    // Step 5: Validate HTML is not empty
-    if (!html || html.trim().length === 0) {
-      hideLoading(container)
-      showError('Could not extract content from Word document', container)
-      return
-    }
-
-    // Step 6: Update loading "Rendering to PDF..."
-    showLoading(container, 'Rendering to PDF...')
-
-    // Step 7: Create hidden temp container with A4 dimensions
-    const tempContainer = document.createElement('div')
-    tempContainer.id = 'word-to-pdf-temp-container'
-
-    // Step 8: Set container styles (A4 width with padding)
-    tempContainer.style.position = 'absolute'
-    tempContainer.style.left = '-9999px'
-    tempContainer.style.width = '210mm'
-    tempContainer.style.padding = '20mm'
-    tempContainer.style.fontFamily = 'Arial, sans-serif'
-    tempContainer.style.fontSize = '12pt'
-    tempContainer.style.lineHeight = '1.5'
-    tempContainer.style.backgroundColor = 'white'
-    tempContainer.style.boxSizing = 'border-box'
-
-    // Step 9: Insert HTML into container
-    tempContainer.innerHTML = html
-    document.body.appendChild(tempContainer)
-
-    // Step 10: Wait for images to load
-    const images = tempContainer.querySelectorAll('img')
-    const imagePromises = Array.from(images).map(img => {
-      return new Promise((resolve) => {
-        if (img.complete) {
-          resolve()
-        } else {
-          img.onload = resolve
-          img.onerror = resolve // Resolve even on error to not block the process
-        }
-      })
-    })
-    await Promise.all(imagePromises)
-
-    // Step 11: Create jsPDF instance (portrait, A4)
-    const pdf = new jsPDF('portrait', 'mm', 'a4')
-    const pdfWidth = pdf.internal.pageSize.getWidth()
-    const pdfHeight = pdf.internal.pageSize.getHeight()
-
-    // Step 12: Render container to canvas using html2canvas
-    const canvas = await html2canvas(tempContainer, {
-      scale: 2,
-      useCORS: true,
-      logging: false
+    const response = await fetch(`${API_URL}/api/word-to-pdf`, {
+      method: 'POST',
+      body: formData
     })
 
-    const imgData = canvas.toDataURL('image/png')
-    const imgWidth = pdfWidth
-    const imgHeight = (canvas.height * pdfWidth) / canvas.width
-
-    // Step 13: Calculate multi-page layout (A4 = 210mm × 297mm)
-    let heightLeft = imgHeight
-    let position = 0
-
-    // Step 14: Add first page to PDF
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-    heightLeft -= pdfHeight
-
-    // Step 15: Loop to add additional pages if content exceeds one page
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight
-      pdf.addPage()
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-      heightLeft -= pdfHeight
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Conversion failed' }))
+      throw new Error(error.detail || `Server error: ${response.status}`)
     }
 
-    // Step 16: Clean up: remove temp container
-    document.body.removeChild(tempContainer)
+    // Download the converted file
+    showLoading(container, 'Downloading converted PDF...')
 
-    // Step 17: Download PDF using generateFileName
-    const outputFileName = generateFileName(fileName, 'to-pdf', 'pdf')
-    pdf.save(outputFileName)
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
 
-    hideLoading(container)
+    // Generate filename
+    const outputFileName = fileName.replace(/\.(docx|doc)$/i, '.pdf')
 
-    // Step 18: Show success message
-    showSuccess(`Successfully converted to ${outputFileName}`, container)
+    // Trigger download
+    const a = document.createElement('a')
+    a.href = url
+    a.download = outputFileName
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+
+    // Cleanup
+    setTimeout(() => URL.revokeObjectURL(url), 100)
+
+    hideLoading()
+    showSuccess(`Successfully converted to PDF: ${outputFileName}`, container)
+
+    // Show info about quality
+    const infoDiv = document.createElement('div')
+    infoDiv.className = 'mt-4 p-3 bg-green-50 border border-green-200 rounded text-sm text-green-800'
+    infoDiv.innerHTML = `
+      <strong>✓ Professional conversion complete!</strong><br>
+      Original formatting preserved: fonts, styles, tables, images, and layouts.
+    `
+    container.appendChild(infoDiv)
 
   } catch (error) {
-    hideLoading(container)
-    console.error('Error converting Word to PDF:', error)
-    showError(`Conversion failed: ${error.message}`, container)
+    hideLoading()
+    console.error('Conversion error:', error)
+
+    let errorMessage = 'Conversion failed. '
+
+    if (error.message.includes('Failed to fetch')) {
+      errorMessage += 'Unable to connect to conversion server. Please check your internet connection.'
+    } else {
+      errorMessage += error.message
+    }
+
+    showError(errorMessage, container)
   }
 }
