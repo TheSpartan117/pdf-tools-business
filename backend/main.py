@@ -775,11 +775,7 @@ async def privacy_policy():
         <p>We may update this privacy policy to reflect changes in our practices. Last updated date is shown at the top of this page.</p>
 
         <h2>Contact</h2>
-        <p>If you have questions about how we handle your files:</p>
-        <ul>
-            <li>Review our open-source code: <a href="https://github.com/JoHn11117/pdf-tools-business">GitHub Repository</a></li>
-            <li>Technical documentation: See README.md in the backend folder</li>
-        </ul>
+        <p>If you have questions about how we handle your files, you can review our privacy practices above and our security measures.</p>
 
         <div class="guarantee">
             <h3>✓ Privacy Guarantee Summary</h3>
