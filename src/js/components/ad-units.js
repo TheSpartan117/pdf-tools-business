@@ -1,6 +1,6 @@
 /**
  * Ad unit placeholders for Google AdSense
- * Replace data-ad-client and data-ad-slot with real values after AdSense approval
+ * Ad slot IDs will be updated after AdSense approval
  */
 
 export function createTopBannerAd() {
@@ -11,7 +11,7 @@ export function createTopBannerAd() {
     <div class="flex justify-center">
       <ins class="adsbygoogle"
            style="display:inline-block;width:728px;height:90px"
-           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-client="ca-pub-5124725611632243"
            data-ad-slot="XXXXXXXXXX"></ins>
     </div>
   `
@@ -43,7 +43,7 @@ export function createInArticleAd() {
          style="display:block; text-align:center;"
          data-ad-layout="in-article"
          data-ad-format="fluid"
-         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-client="ca-pub-5124725611632243"
          data-ad-slot="XXXXXXXXXX"></ins>
   `
   return ad
@@ -78,7 +78,7 @@ export function createToolTopBannerAd() {
       <!-- Top Banner Ad Unit -->
       <ins class="adsbygoogle"
            style="display:block"
-           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-client="ca-pub-5124725611632243"
            data-ad-slot="XXXXXXXXXX"
            data-ad-format="horizontal"
            data-full-width-responsive="true"></ins>
@@ -112,7 +112,7 @@ export function createToolSidebarAd() {
       <!-- Sidebar Ad Unit -->
       <ins class="adsbygoogle"
            style="display:inline-block;width:300px;height:600px"
-           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-client="ca-pub-5124725611632243"
            data-ad-slot="YYYYYYYYYY"></ins>
     </div>
   `
@@ -144,7 +144,7 @@ export function createInContentAd() {
          style="display:block"
          data-ad-format="fluid"
          data-ad-layout-key="-fb+5w+4e-db+86"
-         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-client="ca-pub-5124725611632243"
          data-ad-slot="ZZZZZZZZZZ"></ins>
   `
 
