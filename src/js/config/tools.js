@@ -3,14 +3,33 @@ export const TOOLS = [
     id: 'pdf-to-word',
     name: 'PDF to Word',
     description: 'Convert PDF documents to editable Word files',
-    icon: '📄→📝',
+    icon: `<svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <g>
+        <!-- PDF Document (left side) -->
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h4a2 2 0 002-2V7.414a1 1 0 00-.293-.707l-2.414-2.414A1 1 0 009.586 4H7a2 2 0 00-2 2v13a2 2 0 002 2z" />
+        <!-- Arrow -->
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12h5m0 0l-2-2m2 2l-2 2" />
+        <!-- Word Document (right side) -->
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 21h2a2 2 0 002-2V7a2 2 0 00-2-2h-2" opacity="0.7"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 10h2M18 14h2" opacity="0.7"/>
+      </g>
+    </svg>`,
     enabled: true
   },
   {
     id: 'word-to-pdf',
     name: 'Word to PDF',
     description: 'Convert Word documents to PDF format',
-    icon: '📝→📄',
+    icon: `<svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <g>
+        <!-- Word Document (left side) -->
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10h2M5 14h2M7 21H5a2 2 0 01-2-2V7a2 2 0 012-2h2" opacity="0.7"/>
+        <!-- Arrow -->
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12h5m0 0l-2-2m2 2l-2 2" />
+        <!-- PDF Document (right side) -->
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 21h2a2 2 0 002-2V7.414a1 1 0 00-.293-.707l-2.414-2.414A1 1 0 0017.586 4H15a2 2 0 00-2 2v13a2 2 0 002 2h2z" />
+      </g>
+    </svg>`,
     enabled: true
   },
   {

@@ -3,7 +3,7 @@ import { navigateTo } from '../router.js'
 
 export function createFeaturesGrid() {
   const section = document.createElement('section')
-  section.id = 'features'
+  section.id = 'tool-grid'
   section.className = 'py-4'
 
   const header = document.createElement('div')
