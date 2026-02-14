@@ -1,5 +1,6 @@
 import { getToolH1 } from '../utils/seo.js'
 import { injectToolSchema } from '../utils/schema.js'
+import { createFAQSection } from './faq-section.js'
 
 export function createToolPage(tool) {
   const page = document.createElement('div')
@@ -38,9 +39,20 @@ export function createToolPage(tool) {
   contentContainer.id = 'tool-content'
   contentContainer.className = 'container mx-auto px-4 pb-16'
 
+  // FAQ section
+  const faqSection = createFAQSection(tool.id)
+
   page.appendChild(header)
   page.appendChild(titleSection)
   page.appendChild(contentContainer)
+
+  // Append FAQ section if it has content
+  if (faqSection.children.length > 0) {
+    const faqContainer = document.createElement('div')
+    faqContainer.className = 'container mx-auto px-4 pb-16'
+    faqContainer.appendChild(faqSection)
+    page.appendChild(faqContainer)
+  }
 
   // Back button handler
   header.querySelector('#back-btn').addEventListener('click', () => {
