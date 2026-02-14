@@ -64,3 +64,99 @@ export function initAds() {
     })
   }
 }
+
+/**
+ * Create top banner ad for tool pages
+ * @returns {HTMLElement}
+ */
+export function createToolTopBannerAd() {
+  const adContainer = document.createElement('div')
+  adContainer.className = 'max-w-4xl mx-auto mb-8'
+  adContainer.innerHTML = `
+    <div class="bg-gray-100 border border-gray-300 rounded p-4">
+      <p class="text-xs text-gray-500 text-center mb-2">Advertisement</p>
+      <!-- Top Banner Ad Unit -->
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="XXXXXXXXXX"
+           data-ad-format="horizontal"
+           data-full-width-responsive="true"></ins>
+    </div>
+  `
+
+  // Initialize ad after a small delay to ensure DOM is ready
+  setTimeout(() => {
+    try {
+      if (window.adsbygoogle) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({})
+      }
+    } catch (e) {
+      console.warn('AdSense not loaded yet:', e)
+    }
+  }, 100)
+
+  return adContainer
+}
+
+/**
+ * Create sidebar ad for tool pages (desktop only)
+ * @returns {HTMLElement}
+ */
+export function createToolSidebarAd() {
+  const adContainer = document.createElement('div')
+  adContainer.className = 'hidden lg:block sticky top-4'
+  adContainer.innerHTML = `
+    <div class="bg-gray-100 border border-gray-300 rounded p-4 w-[300px]">
+      <p class="text-xs text-gray-500 text-center mb-2">Advertisement</p>
+      <!-- Sidebar Ad Unit -->
+      <ins class="adsbygoogle"
+           style="display:inline-block;width:300px;height:600px"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="YYYYYYYYYY"></ins>
+    </div>
+  `
+
+  setTimeout(() => {
+    try {
+      if (window.adsbygoogle) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({})
+      }
+    } catch (e) {
+      console.warn('AdSense not loaded yet:', e)
+    }
+  }, 100)
+
+  return adContainer
+}
+
+/**
+ * Create in-content ad for after tool usage
+ * @returns {HTMLElement}
+ */
+export function createInContentAd() {
+  const adContainer = document.createElement('div')
+  adContainer.className = 'bg-gray-100 border border-gray-300 rounded p-4 mt-8'
+  adContainer.innerHTML = `
+    <p class="text-xs text-gray-500 text-center mb-2">Advertisement</p>
+    <!-- In-Content Ad Unit -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-format="fluid"
+         data-ad-layout-key="-fb+5w+4e-db+86"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="ZZZZZZZZZZ"></ins>
+  `
+
+  setTimeout(() => {
+    try {
+      if (window.adsbygoogle) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({})
+      }
+    } catch (e) {
+      console.warn('AdSense not loaded yet:', e)
+    }
+  }, 100)
+
+  return adContainer
+}

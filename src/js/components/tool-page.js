@@ -1,6 +1,7 @@
 import { getToolH1 } from '../utils/seo.js'
 import { injectToolSchema } from '../utils/schema.js'
 import { createFAQSection } from './faq-section.js'
+import { createToolTopBannerAd, createToolSidebarAd, createInContentAd } from './ad-units.js'
 
 export function createToolPage(tool) {
   const page = document.createElement('div')
@@ -34,17 +35,42 @@ export function createToolPage(tool) {
     </div>
   `
 
-  // Tool content container
+  // Add top banner ad after title section
+  const topBannerAd = createToolTopBannerAd()
+  titleSection.appendChild(topBannerAd)
+
+  // Main container with grid layout for tool content and sidebar
+  const mainContainer = document.createElement('div')
+  mainContainer.className = 'container mx-auto px-4 pb-8'
+
+  const gridLayout = document.createElement('div')
+  gridLayout.className = 'grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8'
+
+  // Tool content container (left column)
   const contentContainer = document.createElement('div')
   contentContainer.id = 'tool-content'
-  contentContainer.className = 'container mx-auto px-4 pb-16'
+  contentContainer.className = 'min-w-0'
+
+  // Sidebar ad container (right column, desktop only)
+  const sidebarAd = createToolSidebarAd()
+
+  gridLayout.appendChild(contentContainer)
+  gridLayout.appendChild(sidebarAd)
+  mainContainer.appendChild(gridLayout)
+
+  // In-content ad container
+  const inContentAdContainer = document.createElement('div')
+  inContentAdContainer.className = 'container mx-auto px-4 pb-8'
+  const inContentAd = createInContentAd()
+  inContentAdContainer.appendChild(inContentAd)
 
   // FAQ section
   const faqSection = createFAQSection(tool.id)
 
   page.appendChild(header)
   page.appendChild(titleSection)
-  page.appendChild(contentContainer)
+  page.appendChild(mainContainer)
+  page.appendChild(inContentAdContainer)
 
   // Append FAQ section if it has content
   if (faqSection.children.length > 0) {
