@@ -9,6 +9,7 @@ import { initRouter } from './router.js'
 import { TOOLS } from './config/tools.js'
 import { createTopBannerAd, initAds, createSidebarAd } from './components/ad-units.js'
 import { updateMetaTags } from './utils/seo.js'
+import { removeToolSchema } from './utils/schema.js'
 
 console.log('PDF Tools app initializing...')
 
@@ -32,6 +33,7 @@ function initApp() {
 
 function showHomePage() {
   updateMetaTags('home')
+  removeToolSchema()
   const app = document.getElementById('app')
   app.innerHTML = ''
 
@@ -164,6 +166,7 @@ function showToolPage(params) {
 
 function showPrivacyPage() {
   updateMetaTags('privacy')
+  removeToolSchema()
   const app = document.getElementById('app')
   app.innerHTML = ''
 
@@ -172,6 +175,7 @@ function showPrivacyPage() {
 
 function showTermsPage() {
   updateMetaTags('terms')
+  removeToolSchema()
   const app = document.getElementById('app')
   app.innerHTML = ''
 
