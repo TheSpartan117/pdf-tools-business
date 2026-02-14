@@ -78,4 +78,28 @@
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
+  <url>
+    <loc>https://pdf-tools-business.vercel.app/#/blog</loc>
+    <lastmod>2026-02-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://pdf-tools-business.vercel.app/#/blog/pdf-to-word-no-formatting-loss</loc>
+    <lastmod>2026-02-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://pdf-tools-business.vercel.app/#/blog/compress-pdf-for-email</loc>
+    <lastmod>2026-02-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://pdf-tools-business.vercel.app/#/blog/ocr-scanned-pdf-guide</loc>
+    <lastmod>2026-02-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>
