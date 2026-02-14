@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PDF Compression</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2563eb; }
+        input[type="file"] {
+            display: block;
+            margin: 20px 0;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+        }
+        select, button {
+            padding: 10px 20px;
+            margin: 10px 5px 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover { background: #1e40af; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success { background: #dcfce7; border: 1px solid #16a34a; color: #166534; }
+        .error { background: #fee2e2; border: 1px solid #dc2626; color: #991b1b; }
+        .info { background: #dbeafe; border: 1px solid #2563eb; color: #1e40af; }
+        .stats {
+            background: #f0fdf4;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            border-left: 4px solid #16a34a;
+        }
+        .stats h3 { margin-top: 0; color: #166534; }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .stat-label { font-weight: 500; }
+        .stat-value { color: #16a34a; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗜️ Test PDF Compression</h1>
+        <p>Upload a PDF to test the compression API</p>
+
+        <input type="file" id="fileInput" accept="application/pdf">
+
+        <label for="quality">Compression Quality:</label>
+        <select id="quality">
+            <option value="low">Low - Maximum compression (~60% reduction, lower quality)</option>
+            <option value="medium" selected>Medium - Balanced (~50% reduction, good quality)</option>
+            <option value="high">High - Light compression (~40% reduction, best quality)</option>
+        </select>
+
+        <button id="compressBtn" disabled>Compress PDF</button>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://pdf-tools-api-0m15.onrender.com';
+        const fileInput = document.getElementById('fileInput');
+        const compressBtn = document.getElementById('compressBtn');
+        const qualitySelect = document.getElementById('quality');
+        const statusDiv = document.getElementById('status');
+
+        let selectedFile = null;
+
+        fileInput.addEventListener('change', (e) => {
+            selectedFile = e.target.files[0];
+            compressBtn.disabled = !selectedFile;
+
+            if (selectedFile) {
+                showStatus(`Selected: ${selectedFile.name} (${formatBytes(selectedFile.size)})`, 'info');
+            }
+        });
+
+        compressBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            compressBtn.disabled = true;
+            showStatus('Compressing PDF... This may take 10-30 seconds', 'info');
+
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                formData.append('quality', qualitySelect.value);
+
+                const response = await fetch(`${API_URL}/api/compress`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Compression failed: ${response.statusText}`);
+                }
+
+                // Get compression stats from headers
+                const originalSize = parseInt(response.headers.get('X-Original-Size') || selectedFile.size);
+                const compressedSize = parseInt(response.headers.get('X-Compressed-Size') || 0);
+                const reductionPercent = response.headers.get('X-Reduction-Percent') || '0';
+
+                // Download the compressed file
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = selectedFile.name.replace('.pdf', '_compressed.pdf');
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                // Show stats
+                showStats(originalSize, compressedSize, reductionPercent);
+
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                compressBtn.disabled = false;
+            }
+        });
+
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = type;
+            statusDiv.style.display = 'block';
+        }
+
+        function showStats(originalSize, compressedSize, reductionPercent) {
+            const savedBytes = originalSize - compressedSize;
+
+            statusDiv.className = 'success';
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = `
+                <div class="stats">
+                    <h3>✓ Compression Successful!</h3>
+                    <div class="stat-row">
+                        <span class="stat-label">Original Size:</span>
+                        <span class="stat-value">${formatBytes(originalSize)}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Compressed Size:</span>
+                        <span class="stat-value">${formatBytes(compressedSize)}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Space Saved:</span>
+                        <span class="stat-value">${formatBytes(savedBytes)} (${reductionPercent}%)</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Quality Level:</span>
+                        <span class="stat-value">${qualitySelect.value.toUpperCase()}</span>
+                    </div>
+                </div>
+                <p>File downloaded successfully!</p>
+            `;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>

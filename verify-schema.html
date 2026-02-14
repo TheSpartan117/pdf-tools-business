@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schema Verification Test</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .success { color: #22c55e; font-weight: bold; }
+    .error { color: #ef4444; font-weight: bold; }
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .tool-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+    }
+    .tool-card {
+      background: #f8fafc;
+      padding: 15px;
+      border-radius: 6px;
+      border-left: 4px solid #667eea;
+    }
+    .validation-item {
+      padding: 10px;
+      margin: 5px 0;
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    button {
+      background: #667eea;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+    }
+    button:hover {
+      background: #5568d3;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Schema.org Markup Verification</h1>
+    <p>Task 2: SoftwareApplication Schema Implementation</p>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 1: Schema Generation</h2>
+    <div id="generation-test">Testing...</div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 2: Schema Injection</h2>
+    <div id="injection-test">Testing...</div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 3: All Tool Schemas</h2>
+    <button onclick="runToolTests()">Test All 9 Tools</button>
+    <div id="tool-tests"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 4: Schema Structure Validation</h2>
+    <div id="validation-test"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 5: Live Schema in Page</h2>
+    <button onclick="checkPageSchema()">Check Current Page Schema</button>
+    <div id="page-schema"></div>
+  </div>
+
+  <script type="module">
+    import { generateToolSchema, injectToolSchema, SCHEMA_TEMPLATES } from './src/js/utils/schema.js';
+
+    // Test 1: Schema Generation
+    const schema = generateToolSchema('pdf-to-word');
+    const genTest = document.getElementById('generation-test');
+    if (schema) {
+      genTest.innerHTML = '<p class="success">✓ Schema generation works!</p>';
+      genTest.innerHTML += '<pre>' + JSON.stringify(schema, null, 2) + '</pre>';
+    } else {
+      genTest.innerHTML = '<p class="error">✗ Schema generation failed</p>';
+    }
+
+    // Test 2: Schema Injection
+    injectToolSchema('pdf-to-word');
+    setTimeout(() => {
+      const injTest = document.getElementById('injection-test');
+      const scriptTag = document.querySelector('script[type="application/ld+json"]');
+
+      if (scriptTag) {
+        injTest.innerHTML = '<p class="success">✓ Schema injection works!</p>';
+        injTest.innerHTML += '<p>Schema found in &lt;head&gt; tag</p>';
+        injTest.innerHTML += '<pre>' + scriptTag.textContent + '</pre>';
+      } else {
+        injTest.innerHTML = '<p class="error">✗ Schema injection failed</p>';
+      }
+    }, 100);
+
+    // Test 3: All Tools
+    window.runToolTests = function() {
+      const testDiv = document.getElementById('tool-tests');
+      testDiv.innerHTML = '<div class="tool-list"></div>';
+      const toolList = testDiv.querySelector('.tool-list');
+
+      Object.keys(SCHEMA_TEMPLATES).forEach(toolId => {
+        const schema = generateToolSchema(toolId);
+        const card = document.createElement('div');
+        card.className = 'tool-card';
+
+        if (schema && schema.name) {
+          card.innerHTML = `
+            <p class="success">✓ ${toolId}</p>
+            <strong>${schema.name}</strong><br>
+            <small>Rating: ${schema.aggregateRating.ratingValue} (${schema.aggregateRating.ratingCount} reviews)</small>
+          `;
+        } else {
+          card.innerHTML = `<p class="error">✗ ${toolId} - Failed</p>`;
+        }
+        toolList.appendChild(card);
+      });
+    };
+
+    // Test 4: Schema Structure Validation
+    const valTest = document.getElementById('validation-test');
+    const testSchema = generateToolSchema('pdf-to-word');
+
+    const checks = [
+      { name: '@context', test: testSchema['@context'] === 'https://schema.org' },
+      { name: '@type', test: testSchema['@type'] === 'SoftwareApplication' },
+      { name: 'name', test: typeof testSchema.name === 'string' && testSchema.name.length > 0 },
+      { name: 'description', test: typeof testSchema.description === 'string' },
+      { name: 'operatingSystem', test: testSchema.operatingSystem === 'Web Browser' },
+      { name: 'offers.price', test: testSchema.offers.price === '0' },
+      { name: 'offers.priceCurrency', test: testSchema.offers.priceCurrency === 'USD' },
+      { name: 'aggregateRating.ratingValue', test: parseFloat(testSchema.aggregateRating.ratingValue) > 0 },
+      { name: 'aggregateRating.ratingCount', test: parseInt(testSchema.aggregateRating.ratingCount) > 0 },
+      { name: 'author.name', test: testSchema.author.name === 'PDF Tools' },
+    ];
+
+    valTest.innerHTML = checks.map(check => `
+      <div class="validation-item">
+        ${check.test ? '<span class="success">✓</span>' : '<span class="error">✗</span>'}
+        ${check.name}
+      </div>
+    `).join('');
+
+    const allPassed = checks.every(check => check.test);
+    if (allPassed) {
+      valTest.innerHTML += '<p class="success">✓ All validation checks passed!</p>';
+    } else {
+      valTest.innerHTML += '<p class="error">✗ Some validation checks failed</p>';
+    }
+
+    // Test 5: Check Page Schema
+    window.checkPageSchema = function() {
+      const pageTest = document.getElementById('page-schema');
+      const scriptTag = document.querySelector('script[type="application/ld+json"]');
+
+      if (scriptTag) {
+        try {
+          const parsed = JSON.parse(scriptTag.textContent);
+          pageTest.innerHTML = `
+            <p class="success">✓ Schema found in page!</p>
+            <p><strong>Tool:</strong> ${parsed.name}</p>
+            <p><strong>Type:</strong> ${parsed['@type']}</p>
+            <p><strong>Rating:</strong> ${parsed.aggregateRating.ratingValue} (${parsed.aggregateRating.ratingCount} reviews)</p>
+            <h3>Complete Schema:</h3>
+            <pre>${JSON.stringify(parsed, null, 2)}</pre>
+            <p class="success">✓ Ready for validation at <a href="https://validator.schema.org/" target="_blank">validator.schema.org</a></p>
+          `;
+        } catch (e) {
+          pageTest.innerHTML = '<p class="error">✗ Error parsing schema: ' + e.message + '</p>';
+        }
+      } else {
+        pageTest.innerHTML = '<p class="error">✗ No schema found in page</p>';
+      }
+    };
+
+    // Auto-run some tests
+    setTimeout(() => {
+      runToolTests();
+      checkPageSchema();
+    }, 200);
+  </script>
+</body>
+</html>

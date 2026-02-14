@@ -1,7 +1,7 @@
 import { getToolH1 } from '../utils/seo.js'
 import { injectToolSchema } from '../utils/schema.js'
 import { createFAQSection } from './faq-section.js'
-import { createToolTopBannerAd, createToolSidebarAd, createInContentAd } from './ad-units.js'
+import { createInContentAd } from './ad-units.js'
 
 export function createToolPage(tool) {
   const page = document.createElement('div')
@@ -35,34 +35,29 @@ export function createToolPage(tool) {
     </div>
   `
 
-  // Add top banner ad after title section
-  const topBannerAd = createToolTopBannerAd()
-  titleSection.appendChild(topBannerAd)
-
-  // Main container with grid layout for tool content and sidebar
+  // Main container - TOOL FIRST, NO ADS ABOVE
   const mainContainer = document.createElement('div')
   mainContainer.className = 'container mx-auto px-4 pb-8'
 
-  const gridLayout = document.createElement('div')
-  gridLayout.className = 'grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8'
-
-  // Tool content container (left column)
+  // Tool content container - full width, no sidebar
   const contentContainer = document.createElement('div')
   contentContainer.id = 'tool-content'
-  contentContainer.className = 'min-w-0'
+  contentContainer.className = 'w-full max-w-4xl mx-auto'
 
-  // Sidebar ad container (right column, desktop only)
-  const sidebarAd = createToolSidebarAd()
+  mainContainer.appendChild(contentContainer)
 
-  gridLayout.appendChild(contentContainer)
-  gridLayout.appendChild(sidebarAd)
-  mainContainer.appendChild(gridLayout)
+  // Ad section - AFTER the tool interface
+  const adSection = document.createElement('div')
+  adSection.className = 'container mx-auto px-4 py-8'
+  adSection.innerHTML = `
+    <div class="max-w-4xl mx-auto space-y-6">
+      <div class="text-xs text-gray-500 text-center mb-2">Advertisement</div>
+    </div>
+  `
 
-  // In-content ad container
-  const inContentAdContainer = document.createElement('div')
-  inContentAdContainer.className = 'container mx-auto px-4 pb-8'
+  // Add horizontal ad after tool (non-intrusive)
   const inContentAd = createInContentAd()
-  inContentAdContainer.appendChild(inContentAd)
+  adSection.querySelector('.space-y-6').appendChild(inContentAd)
 
   // FAQ section
   const faqSection = createFAQSection(tool.id)
@@ -70,7 +65,6 @@ export function createToolPage(tool) {
   page.appendChild(header)
   page.appendChild(titleSection)
   page.appendChild(mainContainer)
-  page.appendChild(inContentAdContainer)
 
   // Append FAQ section if it has content
   if (faqSection.children.length > 0) {
@@ -79,6 +73,9 @@ export function createToolPage(tool) {
     faqContainer.appendChild(faqSection)
     page.appendChild(faqContainer)
   }
+
+  // Add ads AFTER FAQ section (at the very bottom)
+  page.appendChild(adSection)
 
   // Back button handler
   header.querySelector('#back-btn').addEventListener('click', () => {
