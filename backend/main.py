@@ -253,11 +253,11 @@ async def convert_word_to_pdf(background_tasks: BackgroundTasks, file: UploadFil
         # Convert DOCX to PDF using LibreOffice (best quality)
         logger.info(f"Converting: {docx_path} -> {pdf_path}")
 
-        # Use LibreOffice headless mode for conversion
+        # Use LibreOffice headless mode for conversion with better quality settings
         result = subprocess.run([
             LIBREOFFICE_PATH,
             '--headless',
-            '--convert-to', 'pdf',
+            '--convert-to', 'pdf:writer_pdf_Export',
             '--outdir', os.path.dirname(pdf_path),
             docx_path
         ], capture_output=True, text=True, timeout=60)
