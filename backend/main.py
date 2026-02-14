@@ -50,8 +50,23 @@ def find_libreoffice():
     logger.error("LibreOffice not found in any common location")
     return None
 
+# Check if Pandoc is available
+def check_pandoc():
+    """Check if Pandoc is installed"""
+    try:
+        result = subprocess.run(['pandoc', '--version'],
+                               capture_output=True,
+                               timeout=5)
+        if result.returncode == 0:
+            logger.info("Pandoc is available")
+            return True
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        logger.warning("Pandoc not found")
+    return False
+
 # Get LibreOffice path on startup
 LIBREOFFICE_PATH = find_libreoffice()
+PANDOC_AVAILABLE = check_pandoc()
 
 app = FastAPI(
     title="Professional PDF Tools API",
@@ -212,12 +227,17 @@ async def convert_pdf_to_word(background_tasks: BackgroundTasks, file: UploadFil
         raise HTTPException(status_code=500, detail=f"Conversion failed: {str(e)}")
 
 @app.post("/api/word-to-pdf")
-async def convert_word_to_pdf(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+async def convert_word_to_pdf(
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    engine: str = Form("libreoffice")
+):
     """
     Convert Word document to PDF
 
     Args:
         file: DOCX file to convert
+        engine: Conversion engine ("libreoffice" or "pandoc")
 
     Returns:
         PDF file
@@ -243,38 +263,57 @@ async def convert_word_to_pdf(background_tasks: BackgroundTasks, file: UploadFil
         pdf_path = pdf_temp.name
 
     try:
-        # Check if LibreOffice is available
-        if not LIBREOFFICE_PATH:
-            raise HTTPException(
-                status_code=503,
-                detail="LibreOffice not installed on server. Please contact administrator."
+        # Choose conversion engine
+        if engine.lower() == "pandoc" and PANDOC_AVAILABLE:
+            logger.info(f"Converting with Pandoc: {docx_path} -> {pdf_path}")
+
+            # Convert using Pandoc (better for tables)
+            result = subprocess.run([
+                'pandoc',
+                docx_path,
+                '-o', pdf_path,
+                '--pdf-engine=pdflatex',
+                '-V', 'geometry:margin=1in'
+            ], capture_output=True, text=True, timeout=60)
+
+            if result.returncode != 0:
+                logger.warning(f"Pandoc conversion failed: {result.stderr}")
+                raise Exception(f"Pandoc conversion failed: {result.stderr}")
+
+            logger.info(f"Pandoc conversion successful: {file.filename}")
+
+        else:
+            # Use LibreOffice (default)
+            if not LIBREOFFICE_PATH:
+                raise HTTPException(
+                    status_code=503,
+                    detail="LibreOffice not installed on server. Please contact administrator."
+                )
+
+            logger.info(f"Converting with LibreOffice: {docx_path} -> {pdf_path}")
+
+            # Use LibreOffice headless mode for conversion with better quality settings
+            result = subprocess.run([
+                LIBREOFFICE_PATH,
+                '--headless',
+                '--convert-to', 'pdf:writer_pdf_Export',
+                '--outdir', os.path.dirname(pdf_path),
+                docx_path
+            ], capture_output=True, text=True, timeout=60)
+
+            if result.returncode != 0:
+                raise Exception(f"LibreOffice conversion failed: {result.stderr}")
+
+            # LibreOffice creates file with original name, need to rename
+            libreoffice_output = os.path.join(
+                os.path.dirname(pdf_path),
+                os.path.basename(docx_path).rsplit('.', 1)[0] + '.pdf'
             )
 
-        # Convert DOCX to PDF using LibreOffice (best quality)
-        logger.info(f"Converting: {docx_path} -> {pdf_path}")
+            if os.path.exists(libreoffice_output) and libreoffice_output != pdf_path:
+                os.rename(libreoffice_output, pdf_path)
 
-        # Use LibreOffice headless mode for conversion with better quality settings
-        result = subprocess.run([
-            LIBREOFFICE_PATH,
-            '--headless',
-            '--convert-to', 'pdf:writer_pdf_Export',
-            '--outdir', os.path.dirname(pdf_path),
-            docx_path
-        ], capture_output=True, text=True, timeout=60)
-
-        if result.returncode != 0:
-            raise Exception(f"LibreOffice conversion failed: {result.stderr}")
-
-        # LibreOffice creates file with original name, need to rename
-        libreoffice_output = os.path.join(
-            os.path.dirname(pdf_path),
-            os.path.basename(docx_path).rsplit('.', 1)[0] + '.pdf'
-        )
-
-        if os.path.exists(libreoffice_output) and libreoffice_output != pdf_path:
-            os.rename(libreoffice_output, pdf_path)
-
-        logger.info(f"Conversion successful: {file.filename}")
+            logger.info(f"LibreOffice conversion successful: {file.filename}")
 
         # Generate output filename
         output_filename = file.filename.rsplit('.', 1)[0] + '.pdf'
