@@ -5,6 +5,8 @@ services:
     plan: starter
     region: oregon
     buildCommand: |
+      apt-get update
+      apt-get install -y --no-install-recommends libreoffice libreoffice-writer tesseract-ocr tesseract-ocr-eng poppler-utils fonts-liberation fonts-dejavu
       pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
