@@ -1,3 +1,5 @@
+import { getToolH1 } from '../utils/seo.js'
+
 export function createToolPage(tool) {
   const page = document.createElement('div')
   page.className = 'min-h-screen bg-gray-50'
@@ -19,12 +21,13 @@ export function createToolPage(tool) {
   // Tool title
   const titleSection = document.createElement('div')
   titleSection.className = 'container mx-auto px-4 py-8'
+  const h1Text = getToolH1(tool.id)
   titleSection.innerHTML = `
     <div class="text-center mb-8">
       <div class="flex justify-center mb-4 text-blue-600">
         ${tool.icon}
       </div>
-      <h1 class="text-4xl font-bold text-gray-900 mb-2">${tool.name}</h1>
+      <h1 class="text-4xl font-bold text-gray-900 mb-2">${h1Text}</h1>
       <p class="text-xl text-gray-600">${tool.description}</p>
     </div>
   `

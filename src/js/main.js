@@ -163,6 +163,7 @@ function showToolPage(params) {
 }
 
 function showPrivacyPage() {
+  updateMetaTags('privacy')
   const app = document.getElementById('app')
   app.innerHTML = ''
 
@@ -170,6 +171,7 @@ function showPrivacyPage() {
 }
 
 function showTermsPage() {
+  updateMetaTags('terms')
   const app = document.getElementById('app')
   app.innerHTML = ''
 

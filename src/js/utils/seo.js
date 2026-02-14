@@ -57,11 +57,29 @@ export const SEO_CONFIG = {
     keywords: 'ocr pdf, extract text from pdf, pdf ocr, scan to text, pdf text extractor',
     h1: 'Free PDF OCR - Extract Text from Scanned PDFs'
   },
+  'extract': {
+    title: 'Extract PDF Pages - Free Online PDF Page Extractor',
+    description: 'Extract specific pages from PDF free online. No signup, no email, no limits. Select and extract individual pages. 100% free PDF page extractor.',
+    keywords: 'extract pdf pages, pdf page extractor, select pdf pages, extract pages from pdf, pdf extractor',
+    h1: 'Free PDF Page Extractor - Select Specific Pages'
+  },
   'home': {
     title: 'Free PDF Tools - Convert, Compress, Merge PDFs Online | No Email Required',
     description: 'Free online PDF tools. Convert, compress, merge, split, and rotate PDFs. No signup, no email, no limits. 100% free and secure.',
     keywords: 'pdf tools, free pdf converter, pdf online, pdf editor, pdf utilities',
     h1: 'Free PDF Tools - No Email Required'
+  },
+  'privacy': {
+    title: 'Privacy Policy - Free PDF Tools',
+    description: 'Privacy policy for Free PDF Tools. Learn how we handle your data and protect your privacy. No data collection, 100% client-side processing.',
+    keywords: 'privacy policy, data protection, privacy, pdf tools privacy',
+    h1: 'Privacy Policy'
+  },
+  'terms': {
+    title: 'Terms of Service - Free PDF Tools',
+    description: 'Terms of service for Free PDF Tools. Understand your rights and responsibilities when using our free PDF tools.',
+    keywords: 'terms of service, terms and conditions, user agreement, pdf tools terms',
+    h1: 'Terms of Service'
   }
 }
 
