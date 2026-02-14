@@ -1,4 +1,5 @@
 import { getToolH1 } from '../utils/seo.js'
+import { injectToolSchema } from '../utils/schema.js'
 
 export function createToolPage(tool) {
   const page = document.createElement('div')
@@ -45,6 +46,9 @@ export function createToolPage(tool) {
   header.querySelector('#back-btn').addEventListener('click', () => {
     window.location.hash = 'home'
   })
+
+  // Inject schema markup
+  injectToolSchema(tool.id)
 
   return { page, contentContainer }
 }
