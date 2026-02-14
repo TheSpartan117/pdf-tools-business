@@ -1,4 +1,7 @@
 libreoffice
+libreoffice-writer
 tesseract-ocr
 tesseract-ocr-eng
 poppler-utils
+fonts-liberation
+fonts-dejavu

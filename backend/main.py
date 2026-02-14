@@ -25,6 +25,34 @@ import glob
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Find LibreOffice executable path
+def find_libreoffice():
+    """Find LibreOffice executable in common locations"""
+    possible_paths = [
+        'libreoffice',  # System PATH
+        '/usr/bin/libreoffice',
+        '/usr/local/bin/libreoffice',
+        '/opt/libreoffice/program/soffice',
+        'soffice',  # Alternative name
+    ]
+
+    for path in possible_paths:
+        try:
+            result = subprocess.run([path, '--version'],
+                                   capture_output=True,
+                                   timeout=5)
+            if result.returncode == 0:
+                logger.info(f"Found LibreOffice at: {path}")
+                return path
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            continue
+
+    logger.error("LibreOffice not found in any common location")
+    return None
+
+# Get LibreOffice path on startup
+LIBREOFFICE_PATH = find_libreoffice()
+
 app = FastAPI(
     title="Professional PDF Tools API",
     description="High-quality PDF conversion and processing (PDF↔Word, OCR, Compression)",
@@ -215,12 +243,19 @@ async def convert_word_to_pdf(background_tasks: BackgroundTasks, file: UploadFil
         pdf_path = pdf_temp.name
 
     try:
+        # Check if LibreOffice is available
+        if not LIBREOFFICE_PATH:
+            raise HTTPException(
+                status_code=503,
+                detail="LibreOffice not installed on server. Please contact administrator."
+            )
+
         # Convert DOCX to PDF using LibreOffice (best quality)
         logger.info(f"Converting: {docx_path} -> {pdf_path}")
 
         # Use LibreOffice headless mode for conversion
         result = subprocess.run([
-            'libreoffice',
+            LIBREOFFICE_PATH,
             '--headless',
             '--convert-to', 'pdf',
             '--outdir', os.path.dirname(pdf_path),
