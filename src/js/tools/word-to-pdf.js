@@ -37,16 +37,35 @@ export function initWordToPdfTool(container) {
   content.appendChild(warningBanner)
 
   // Upload section
-  const uploadSection = createUploadZone({
-    id: 'word-upload',
-    accept: '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    title: 'Upload Word Document',
-    subtitle: 'Drop a .docx file here or click to browse',
-    icon: `<svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-    </svg>`,
-    onFileSelect: (file) => handleFileUpload(file, uploadSection, container)
+  const uploadSection = document.createElement('div')
+  uploadSection.className = 'bg-white rounded-lg shadow-md p-8 mb-6'
+
+  const uploadZone = createUploadZone((files) => {
+    if (!files || files.length === 0) {
+      showError('No file selected', content)
+      return
+    }
+
+    if (files.length > 1) {
+      showError('Please upload only one Word document', content)
+      return
+    }
+
+    handleFileUpload(files[0], uploadSection, content)
   })
+
+  // Update upload zone to accept .docx files
+  const input = uploadZone.querySelector('input[type="file"]')
+  input.removeAttribute('multiple')
+  input.setAttribute('accept', '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+
+  // Update text for Word files
+  const textElement = uploadZone.querySelector('p.text-gray-600')
+  if (textElement) {
+    textElement.textContent = 'Drag and drop a Word document here'
+  }
+
+  uploadSection.appendChild(uploadZone)
   content.appendChild(uploadSection)
 
   // Action buttons
@@ -88,19 +107,14 @@ export function initWordToPdfTool(container) {
         fileInput.value = ''
       }
 
-      const uploadArea = uploadSection.querySelector('[data-upload-area]')
-      if (uploadArea) {
-        uploadArea.className = 'mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400 transition-colors cursor-pointer'
+      const uploadZone = uploadSection.querySelector('.upload-zone')
+      if (uploadZone) {
+        uploadZone.classList.remove('hidden')
       }
 
-      const uploadContent = uploadSection.querySelector('[data-upload-content]')
-      if (uploadContent) {
-        uploadContent.innerHTML = `
-          <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-          <p class="mt-2 text-sm text-gray-600">Drop a .docx file here or click to browse</p>
-        `
+      const fileInfo = uploadSection.querySelector('#file-info-word-to-pdf')
+      if (fileInfo) {
+        fileInfo.remove()
       }
     })
   }
@@ -108,7 +122,7 @@ export function initWordToPdfTool(container) {
   function handleFileUpload(file, uploadSection, container) {
     // Validate file
     if (!validateWordFile(file)) {
-      showError(container, 'Please upload a valid .docx file')
+      showError('Please upload a valid .docx file', container)
       return
     }
 
@@ -117,9 +131,9 @@ export function initWordToPdfTool(container) {
     uploadedFileName = file.name
 
     // Hide upload zone
-    const uploadArea = uploadSection.querySelector('[data-upload-area]')
-    if (uploadArea) {
-      uploadArea.classList.add('hidden')
+    const uploadZone = uploadSection.querySelector('.upload-zone')
+    if (uploadZone) {
+      uploadZone.classList.add('hidden')
     }
 
     // Create and show file info
@@ -163,7 +177,7 @@ async function convertWordToPdf(file, container, fileName) {
   try {
     // Step 1: Validate file exists
     if (!file) {
-      showError(container, 'No file selected')
+      showError('No file selected', container)
       return
     }
 
@@ -180,7 +194,7 @@ async function convertWordToPdf(file, container, fileName) {
     // Step 5: Validate HTML is not empty
     if (!html || html.trim().length === 0) {
       hideLoading(container)
-      showError(container, 'Could not extract content from Word document')
+      showError('Could not extract content from Word document', container)
       return
     }
 
@@ -262,11 +276,11 @@ async function convertWordToPdf(file, container, fileName) {
     hideLoading(container)
 
     // Step 18: Show success message
-    showSuccess(container, `Successfully converted to ${outputFileName}`)
+    showSuccess(`Successfully converted to ${outputFileName}`, container)
 
   } catch (error) {
     hideLoading(container)
     console.error('Error converting Word to PDF:', error)
-    showError(container, `Conversion failed: ${error.message}`)
+    showError(`Conversion failed: ${error.message}`, container)
   }
 }
