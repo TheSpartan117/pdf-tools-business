@@ -39,23 +39,29 @@ export function createToolPage(tool) {
   const topBannerAd = createToolTopBannerAd()
   titleSection.appendChild(topBannerAd)
 
-  // Main container with grid layout for tool content and sidebar
+  // Main container with three-column grid layout (left ad, content, right ad)
   const mainContainer = document.createElement('div')
   mainContainer.className = 'container mx-auto px-4 pb-8'
 
   const gridLayout = document.createElement('div')
-  gridLayout.className = 'grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8'
+  gridLayout.className = 'grid grid-cols-1 lg:grid-cols-[300px_1fr_300px] gap-6'
 
-  // Tool content container (left column)
+  // Left sidebar ad (desktop only)
+  const leftSidebarAd = createToolSidebarAd()
+  leftSidebarAd.className = 'hidden lg:block sticky top-4 self-start'
+
+  // Tool content container (center column)
   const contentContainer = document.createElement('div')
   contentContainer.id = 'tool-content'
   contentContainer.className = 'min-w-0'
 
-  // Sidebar ad container (right column, desktop only)
-  const sidebarAd = createToolSidebarAd()
+  // Right sidebar ad (desktop only)
+  const rightSidebarAd = createToolSidebarAd()
+  rightSidebarAd.className = 'hidden lg:block sticky top-4 self-start'
 
+  gridLayout.appendChild(leftSidebarAd)
   gridLayout.appendChild(contentContainer)
-  gridLayout.appendChild(sidebarAd)
+  gridLayout.appendChild(rightSidebarAd)
   mainContainer.appendChild(gridLayout)
 
   // In-content ad container

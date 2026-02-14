@@ -21,6 +21,9 @@ function handleRouteChange() {
 
   currentRoute = route
 
+  // Scroll to top on route change
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+
   // Handle blog routes specially
   if (route === 'blog') {
     if (params.length > 0) {
