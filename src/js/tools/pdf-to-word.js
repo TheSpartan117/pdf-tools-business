@@ -68,8 +68,8 @@ export function initPdfToWordTool(container) {
 
   uploadSection.appendChild(uploadZone)
 
-  content.appendChild(infoBanner)
   content.appendChild(uploadSection)
+  content.appendChild(infoBanner)
 
   // Action buttons
   const actionsSection = document.createElement('div')
