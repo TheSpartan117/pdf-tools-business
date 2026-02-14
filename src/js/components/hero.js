@@ -27,11 +27,6 @@ export function createHero() {
           <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"> PDF Toolkit</span>
         </h1>
 
-        <!-- Subheading -->
-        <p class="text-xl md:text-2xl text-gray-700 mb-4 font-medium">
-          100% Secure. Unlimited Use. Zero Sign-ups. Always Free.
-        </p>
-
         <!-- Description -->
         <p class="text-base md:text-lg text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
           Merge, split, compress, and convert PDFs with professional quality.
@@ -66,6 +61,13 @@ export function createHero() {
               <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z"/>
             </svg>
             <span class="font-semibold text-gray-700 text-sm">No Installation</span>
+          </div>
+
+          <div class="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm border border-red-100">
+            <svg class="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/>
+            </svg>
+            <span class="font-semibold text-gray-700 text-sm">No Data Stored</span>
           </div>
         </div>
 
