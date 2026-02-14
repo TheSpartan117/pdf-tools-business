@@ -89,16 +89,21 @@ function convertMarkdownToHTML(markdown) {
   html = html.replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" class="text-blue-600 hover:text-blue-700">$1</a>')
 
   // Lists
+  // Convert list items
   html = html.replace(/^\- (.*$)/gim, '<li>$1</li>')
-  html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+
+  // Group consecutive <li> elements into <ul>
+  html = html.replace(/(<li>.*?<\/li>\n?)+/gm, match => {
+    return '<ul>' + match + '</ul>'
+  })
 
   // Paragraphs
   html = html.split('\n\n').map(para => {
-    if (para.startsWith('<h') || para.startsWith('<ul') || para.startsWith('<li')) {
-      return para
-    }
+    para = para.trim()
+    if (!para) return '' // Skip empty paragraphs
+    if (para.startsWith('<')) return para // Any HTML tag, not just specific ones
     return `<p>${para}</p>`
-  }).join('\n')
+  }).filter(p => p).join('\n')
 
   return html
 }
