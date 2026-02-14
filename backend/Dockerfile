@@ -9,12 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libreoffice \
     libreoffice-writer \
     pandoc \
-    texlive-latex-base \
-    texlive-fonts-recommended \
-    texlive-fonts-extra \
-    texlive-latex-recommended \
-    texlive-latex-extra \
-    lmodern \
+    texlive-full \
     tesseract-ocr \
     tesseract-ocr-eng \
     poppler-utils \
