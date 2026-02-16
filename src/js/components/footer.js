@@ -5,8 +5,9 @@ export function createFooter() {
     <div class="container mx-auto px-4">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
-          <h3 class="text-lg font-semibold mb-4">About</h3>
-          <p class="text-gray-400">Free PDF tools that process files securely in your browser. Your privacy is our priority.</p>
+          <h3 class="text-lg font-semibold mb-4">PDF<span style="color:#FF6B35">guruji</span></h3>
+          <p class="text-sm text-gray-400">Your PDF Expert</p>
+          <p class="text-gray-400 mt-4">Free PDF tools that process files securely in your browser. Your privacy is our priority.</p>
         </div>
         <div>
           <h3 class="text-lg font-semibold mb-4">Legal</h3>
@@ -21,7 +22,7 @@ export function createFooter() {
         </div>
       </div>
       <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-        <p>&copy; 2026 PDF Tools. All rights reserved.</p>
+        <p>&copy; 2026 PDFguruji. All rights reserved.</p>
       </div>
     </div>
   `
