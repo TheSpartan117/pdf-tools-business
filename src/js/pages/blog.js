@@ -4,48 +4,59 @@ import { getAllBlogPosts } from '../config/blog-posts.js'
 import { updateMetaTags } from '../utils/seo.js'
 
 export function createBlogPage() {
-  // Update meta tags for blog page
-  updateMetaTags('home')
-  document.title = 'Blog - Free PDF Tools Tips & Guides'
+  try {
+    console.log('createBlogPage - starting')
+    // Update meta tags for blog page
+    updateMetaTags('home')
+    document.title = 'Blog - Free PDF Tools Tips & Guides'
 
-  const page = document.createElement('div')
-  page.className = 'min-h-screen bg-gray-50'
+    const page = document.createElement('div')
+    page.className = 'min-h-screen bg-gray-50'
 
-  page.appendChild(createHeader())
+    console.log('createBlogPage - creating header')
+    page.appendChild(createHeader())
 
-  // Blog header
-  const header = document.createElement('div')
-  header.className = 'bg-white shadow-sm py-12'
-  header.innerHTML = `
-    <div class="container mx-auto px-4">
-      <h1 class="text-4xl font-bold text-gray-900 text-center mb-4">PDF Tools Blog</h1>
-      <p class="text-xl text-gray-600 text-center max-w-2xl mx-auto">
-        Tips, guides, and tutorials for working with PDF files more efficiently
-      </p>
-    </div>
-  `
+    // Blog header
+    const header = document.createElement('div')
+    header.className = 'bg-white shadow-sm py-12'
+    header.innerHTML = `
+      <div class="container mx-auto px-4">
+        <h1 class="text-4xl font-bold text-gray-900 text-center mb-4">PDF Tools Blog</h1>
+        <p class="text-xl text-gray-600 text-center max-w-2xl mx-auto">
+          Tips, guides, and tutorials for working with PDF files more efficiently
+        </p>
+      </div>
+    `
 
-  // Blog posts grid
-  const postsContainer = document.createElement('div')
-  postsContainer.className = 'container mx-auto px-4 py-12'
+    // Blog posts grid
+    const postsContainer = document.createElement('div')
+    postsContainer.className = 'container mx-auto px-4 py-12'
 
-  const postsGrid = document.createElement('div')
-  postsGrid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'
+    const postsGrid = document.createElement('div')
+    postsGrid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'
 
-  const posts = getAllBlogPosts()
+    console.log('createBlogPage - getting blog posts')
+    const posts = getAllBlogPosts()
+    console.log('createBlogPage - found posts:', posts.length)
 
-  posts.forEach(post => {
-    const postCard = createBlogPostCard(post)
-    postsGrid.appendChild(postCard)
-  })
+    posts.forEach((post, index) => {
+      console.log(`createBlogPage - creating card ${index + 1}/${posts.length}`)
+      const postCard = createBlogPostCard(post)
+      postsGrid.appendChild(postCard)
+    })
 
-  postsContainer.appendChild(postsGrid)
+    postsContainer.appendChild(postsGrid)
 
-  page.appendChild(header)
-  page.appendChild(postsContainer)
-  page.appendChild(createFooter())
+    page.appendChild(header)
+    page.appendChild(postsContainer)
+    page.appendChild(createFooter())
 
-  return page
+    console.log('createBlogPage - page created successfully')
+    return page
+  } catch (error) {
+    console.error('createBlogPage - error:', error)
+    throw error
+  }
 }
 
 function createBlogPostCard(post) {
