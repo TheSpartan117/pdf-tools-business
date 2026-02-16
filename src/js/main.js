@@ -5,6 +5,8 @@ import { createFooter } from './components/footer.js'
 import { createToolPage } from './components/tool-page.js'
 import { createPrivacyPage } from './pages/privacy.js'
 import { createTermsPage } from './pages/terms.js'
+import { createAboutPage } from './pages/about.js'
+import { createContactPage } from './pages/contact.js'
 import { createBlogPage } from './pages/blog.js'
 import { createBlogPostPage } from './pages/blog-post.js'
 import { initRouter } from './router.js'
@@ -32,7 +34,9 @@ function initApp() {
     blog: showBlogPage,
     blogPost: showBlogPostPage,
     privacy: showPrivacyPage,
-    terms: showTermsPage
+    terms: showTermsPage,
+    about: showAboutPage,
+    contact: showContactPage
   })
 }
 
@@ -204,4 +208,22 @@ function showBlogPostPage(postId) {
   const app = document.getElementById('app')
   app.innerHTML = ''
   app.appendChild(createBlogPostPage(postId))
+}
+
+function showAboutPage() {
+  updateMetaTags('about')
+  removeToolSchema()
+  removeFAQSchema()
+  const app = document.getElementById('app')
+  app.innerHTML = ''
+  app.appendChild(createAboutPage())
+}
+
+function showContactPage() {
+  updateMetaTags('contact')
+  removeToolSchema()
+  removeFAQSchema()
+  const app = document.getElementById('app')
+  app.innerHTML = ''
+  app.appendChild(createContactPage())
 }

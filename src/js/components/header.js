@@ -31,8 +31,8 @@ export function createHeader() {
         <div class="hidden md:flex items-center space-x-6">
           <a href="#/" class="text-gray-600 hover:text-gray-900">Home</a>
           <a href="#/blog" class="text-gray-600 hover:text-gray-900">Blog</a>
-          <a href="#/privacy" class="text-gray-600 hover:text-gray-900">Privacy</a>
-          <a href="#/terms" class="text-gray-600 hover:text-gray-900">Terms</a>
+          <a href="#/about" class="text-gray-600 hover:text-gray-900">About</a>
+          <a href="#/contact" class="text-gray-600 hover:text-gray-900">Contact</a>
         </div>
         <button id="mobile-menu-btn" class="md:hidden text-gray-600 hover:text-gray-900">
           <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,8 +44,8 @@ export function createHeader() {
       <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 space-y-2">
         <a href="#/" class="block text-gray-600 hover:text-gray-900 py-2">Home</a>
         <a href="#/blog" class="block text-gray-600 hover:text-gray-900 py-2">Blog</a>
-        <a href="#/privacy" class="block text-gray-600 hover:text-gray-900 py-2">Privacy</a>
-        <a href="#/terms" class="block text-gray-600 hover:text-gray-900 py-2">Terms</a>
+        <a href="#/about" class="block text-gray-600 hover:text-gray-900 py-2">About</a>
+        <a href="#/contact" class="block text-gray-600 hover:text-gray-900 py-2">Contact</a>
       </div>
     </nav>
   `
