@@ -48,8 +48,10 @@ export function createBlogPostPage(postId) {
   const contentDiv = document.createElement('div')
   contentDiv.className = 'prose prose-lg max-w-none bg-white rounded-lg shadow-md p-8'
 
-  // Convert markdown-style content to HTML (simple version)
-  contentDiv.innerHTML = convertMarkdownToHTML(post.content)
+  // Convert markdown-style content to HTML
+  const htmlContent = convertMarkdownToHTML(post.content)
+  console.log('Blog post HTML content length:', htmlContent.length)
+  contentDiv.innerHTML = htmlContent
 
   article.appendChild(contentDiv)
 
@@ -74,117 +76,179 @@ export function createBlogPostPage(postId) {
 }
 
 function convertMarkdownToHTML(markdown) {
-  let html = markdown
+  // Split into lines for processing
+  const lines = markdown.split('\n')
+  const output = []
+  let i = 0
 
-  // Code blocks (must be before inline code)
-  html = html.replace(/```(\w*)\n([\s\S]*?)```/gim, (match, lang, code) => {
-    return `<pre class="bg-gray-100 rounded p-4 overflow-x-auto"><code class="language-${lang || 'text'}">${escapeHtml(code.trim())}</code></pre>`
-  })
+  while (i < lines.length) {
+    const line = lines[i]
 
+    // Skip empty lines
+    if (!line.trim()) {
+      i++
+      continue
+    }
+
+    // Code blocks
+    if (line.trim().startsWith('```')) {
+      const lang = line.trim().substring(3)
+      i++
+      let code = ''
+      while (i < lines.length && !lines[i].trim().startsWith('```')) {
+        code += lines[i] + '\n'
+        i++
+      }
+      output.push(`<pre class="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto my-6"><code class="language-${lang || 'text'}">${escapeHtml(code.trim())}</code></pre>`)
+      i++ // Skip closing ```
+      continue
+    }
+
+    // Tables
+    if (line.includes('|') && i + 1 < lines.length && lines[i + 1].includes('---')) {
+      const table = parseTable(lines, i)
+      output.push(table.html)
+      i = table.nextIndex
+      continue
+    }
+
+    // Headers
+    if (line.startsWith('### ')) {
+      output.push(`<h3 class="text-2xl font-bold mt-8 mb-4 text-gray-900">${processInline(line.substring(4))}</h3>`)
+      i++
+      continue
+    }
+    if (line.startsWith('## ')) {
+      output.push(`<h2 class="text-3xl font-bold mt-10 mb-6 text-gray-900">${processInline(line.substring(3))}</h2>`)
+      i++
+      continue
+    }
+    if (line.startsWith('# ')) {
+      output.push(`<h1 class="text-4xl font-bold mt-12 mb-8 text-gray-900">${processInline(line.substring(2))}</h1>`)
+      i++
+      continue
+    }
+
+    // Bullet lists
+    if (line.match(/^[-*✓❌]\s/)) {
+      let listHtml = '<ul class="list-none my-6 space-y-2">'
+      while (i < lines.length && lines[i].match(/^[-*✓❌]\s/)) {
+        const text = lines[i].replace(/^[-*✓❌]\s*/, '')
+        const icon = lines[i].trim()[0]
+        const color = icon === '✓' ? 'text-green-600' : icon === '❌' ? 'text-red-600' : 'text-gray-600'
+        listHtml += `<li class="flex items-start"><span class="${color} mr-2 font-bold">${icon}</span><span>${processInline(text)}</span></li>`
+        i++
+      }
+      listHtml += '</ul>'
+      output.push(listHtml)
+      continue
+    }
+
+    // Numbered lists
+    if (line.match(/^\d+\.\s/)) {
+      let listHtml = '<ol class="list-decimal list-inside my-6 space-y-2 ml-4">'
+      while (i < lines.length && lines[i].match(/^\d+\.\s/)) {
+        const text = lines[i].replace(/^\d+\.\s*/, '')
+        listHtml += `<li>${processInline(text)}</li>`
+        i++
+      }
+      listHtml += '</ol>'
+      output.push(listHtml)
+      continue
+    }
+
+    // Block quotes
+    if (line.startsWith('> ')) {
+      output.push(`<blockquote class="border-l-4 border-blue-500 pl-4 italic my-4 text-gray-700">${processInline(line.substring(2))}</blockquote>`)
+      i++
+      continue
+    }
+
+    // Horizontal rules
+    if (line.trim() === '---') {
+      output.push('<hr class="my-8 border-gray-300">')
+      i++
+      continue
+    }
+
+    // Regular paragraph - collect multiple lines
+    let paragraph = ''
+    while (i < lines.length && lines[i].trim() && !isSpecialLine(lines[i])) {
+      paragraph += lines[i] + ' '
+      i++
+    }
+    if (paragraph.trim()) {
+      output.push(`<p class="mb-4 text-gray-700 leading-relaxed">${processInline(paragraph.trim())}</p>`)
+    }
+  }
+
+  return output.join('\n')
+}
+
+function isSpecialLine(line) {
+  return line.startsWith('#') ||
+         line.startsWith('```') ||
+         line.match(/^[-*✓❌]\s/) ||
+         line.match(/^\d+\.\s/) ||
+         line.startsWith('> ') ||
+         line.trim() === '---' ||
+         line.includes('|')
+}
+
+function processInline(text) {
   // Inline code
-  html = html.replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-2 py-1 rounded text-sm">$1</code>')
-
-  // Tables
-  html = convertTables(html)
-
-  // Headers (must be on their own line)
-  html = html.replace(/^### (.+)$/gim, '<h3 class="text-2xl font-bold mt-8 mb-4">$1</h3>')
-  html = html.replace(/^## (.+)$/gim, '<h2 class="text-3xl font-bold mt-10 mb-6">$1</h2>')
-  html = html.replace(/^# (.+)$/gim, '<h1 class="text-4xl font-bold mt-12 mb-8">$1</h1>')
+  text = text.replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-2 py-1 rounded text-sm font-mono">$1</code>')
 
   // Bold
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-gray-900">$1</strong>')
 
   // Italic
-  html = html.replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
+  text = text.replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
 
   // Links
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:text-blue-700 underline">$1</a>')
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:text-blue-700 underline font-medium">$1</a>')
 
-  // Lists - handle numbered and bulleted
-  html = convertLists(html)
-
-  // Block quotes
-  html = html.replace(/^> (.+)$/gim, '<blockquote class="border-l-4 border-blue-500 pl-4 italic my-4">$1</blockquote>')
-
-  // Horizontal rules
-  html = html.replace(/^---$/gim, '<hr class="my-8 border-gray-300">')
-
-  // Paragraphs - split by double newline
-  html = html.split('\n\n').map(block => {
-    block = block.trim()
-    if (!block) return ''
-    // Don't wrap if already HTML
-    if (block.startsWith('<')) return block
-    // Don't wrap single newlines within a block
-    return `<p class="mb-4">${block.replace(/\n/g, '<br>')}</p>`
-  }).filter(b => b).join('\n\n')
-
-  return html
+  return text
 }
 
-function convertTables(markdown) {
-  // Match tables (header row | separator | data rows)
-  const tableRegex = /(\|.+\|\n\|[-:\s|]+\|\n(?:\|.+\|\n?)*)/gm
+function parseTable(lines, startIndex) {
+  let i = startIndex
+  const rows = []
 
-  return markdown.replace(tableRegex, (match) => {
-    const rows = match.trim().split('\n')
-    if (rows.length < 2) return match
+  // Parse header
+  const headerCells = lines[i].split('|').filter(c => c.trim()).map(c => c.trim())
+  i += 2 // Skip header and separator
 
-    let html = '<div class="overflow-x-auto my-6"><table class="min-w-full border-collapse border border-gray-300">'
-
-    // Header row
-    const headerCells = rows[0].split('|').filter(cell => cell.trim())
-    html += '<thead class="bg-gray-100"><tr>'
-    headerCells.forEach(cell => {
-      html += `<th class="border border-gray-300 px-4 py-2 text-left font-semibold">${cell.trim()}</th>`
-    })
-    html += '</tr></thead>'
-
-    // Data rows (skip separator row at index 1)
-    html += '<tbody>'
-    for (let i = 2; i < rows.length; i++) {
-      const cells = rows[i].split('|').filter(cell => cell.trim())
-      if (cells.length === 0) continue
-
-      html += '<tr>'
-      cells.forEach(cell => {
-        html += `<td class="border border-gray-300 px-4 py-2">${cell.trim()}</td>`
-      })
-      html += '</tr>'
+  // Parse data rows
+  while (i < lines.length && lines[i].includes('|')) {
+    const cells = lines[i].split('|').filter(c => c.trim()).map(c => c.trim())
+    if (cells.length > 0) {
+      rows.push(cells)
     }
-    html += '</tbody></table></div>'
+    i++
+  }
 
-    return html
+  let html = '<div class="overflow-x-auto my-8"><table class="min-w-full border-collapse bg-white shadow-sm rounded-lg overflow-hidden">'
+
+  // Header
+  html += '<thead class="bg-blue-600 text-white"><tr>'
+  headerCells.forEach(cell => {
+    html += `<th class="px-6 py-3 text-left text-sm font-semibold">${processInline(cell)}</th>`
   })
-}
+  html += '</tr></thead>'
 
-function convertLists(markdown) {
-  // Numbered lists
-  markdown = markdown.replace(/(?:^|\n)(\d+\..+(?:\n\d+\..+)*)/gm, (match) => {
-    const items = match.trim().split('\n')
-    let html = '<ol class="list-decimal list-inside my-4 space-y-2">'
-    items.forEach(item => {
-      const text = item.replace(/^\d+\.\s*/, '')
-      html += `<li class="ml-4">${text}</li>`
+  // Body
+  html += '<tbody class="divide-y divide-gray-200">'
+  rows.forEach((row, idx) => {
+    html += `<tr class="${idx % 2 === 0 ? 'bg-gray-50' : 'bg-white'}">`
+    row.forEach(cell => {
+      html += `<td class="px-6 py-4 text-sm text-gray-700">${processInline(cell)}</td>`
     })
-    html += '</ol>'
-    return html
+    html += '</tr>'
   })
+  html += '</tbody></table></div>'
 
-  // Bullet lists
-  markdown = markdown.replace(/(?:^|\n)([-*]\s.+(?:\n[-*]\s.+)*)/gm, (match) => {
-    const items = match.trim().split('\n')
-    let html = '<ul class="list-disc list-inside my-4 space-y-2">'
-    items.forEach(item => {
-      const text = item.replace(/^[-*]\s*/, '')
-      html += `<li class="ml-4">${text}</li>`
-    })
-    html += '</ul>'
-    return html
-  })
-
-  return markdown
+  return { html, nextIndex: i }
 }
 
 function escapeHtml(text) {
