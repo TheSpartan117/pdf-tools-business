@@ -74,38 +74,123 @@ export function createBlogPostPage(postId) {
 }
 
 function convertMarkdownToHTML(markdown) {
-  // Simple markdown-to-HTML converter
   let html = markdown
 
-  // Headers
-  html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>')
-  html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>')
-  html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>')
-
-  // Bold
-  html = html.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
-
-  // Links [text](#/link)
-  html = html.replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" class="text-blue-600 hover:text-blue-700">$1</a>')
-
-  // Lists
-  // Convert list items
-  html = html.replace(/^\- (.*$)/gim, '<li>$1</li>')
-
-  // Group consecutive <li> elements into <ul>
-  html = html.replace(/(<li>.*?<\/li>\n?)+/gm, match => {
-    return '<ul>' + match + '</ul>'
+  // Code blocks (must be before inline code)
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/gim, (match, lang, code) => {
+    return `<pre class="bg-gray-100 rounded p-4 overflow-x-auto"><code class="language-${lang || 'text'}">${escapeHtml(code.trim())}</code></pre>`
   })
 
-  // Paragraphs
-  html = html.split('\n\n').map(para => {
-    para = para.trim()
-    if (!para) return '' // Skip empty paragraphs
-    if (para.startsWith('<')) return para // Any HTML tag, not just specific ones
-    return `<p>${para}</p>`
-  }).filter(p => p).join('\n')
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-2 py-1 rounded text-sm">$1</code>')
+
+  // Tables
+  html = convertTables(html)
+
+  // Headers (must be on their own line)
+  html = html.replace(/^### (.+)$/gim, '<h3 class="text-2xl font-bold mt-8 mb-4">$1</h3>')
+  html = html.replace(/^## (.+)$/gim, '<h2 class="text-3xl font-bold mt-10 mb-6">$1</h2>')
+  html = html.replace(/^# (.+)$/gim, '<h1 class="text-4xl font-bold mt-12 mb-8">$1</h1>')
+
+  // Bold
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+
+  // Italic
+  html = html.replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
+
+  // Links
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:text-blue-700 underline">$1</a>')
+
+  // Lists - handle numbered and bulleted
+  html = convertLists(html)
+
+  // Block quotes
+  html = html.replace(/^> (.+)$/gim, '<blockquote class="border-l-4 border-blue-500 pl-4 italic my-4">$1</blockquote>')
+
+  // Horizontal rules
+  html = html.replace(/^---$/gim, '<hr class="my-8 border-gray-300">')
+
+  // Paragraphs - split by double newline
+  html = html.split('\n\n').map(block => {
+    block = block.trim()
+    if (!block) return ''
+    // Don't wrap if already HTML
+    if (block.startsWith('<')) return block
+    // Don't wrap single newlines within a block
+    return `<p class="mb-4">${block.replace(/\n/g, '<br>')}</p>`
+  }).filter(b => b).join('\n\n')
 
   return html
+}
+
+function convertTables(markdown) {
+  // Match tables (header row | separator | data rows)
+  const tableRegex = /(\|.+\|\n\|[-:\s|]+\|\n(?:\|.+\|\n?)*)/gm
+
+  return markdown.replace(tableRegex, (match) => {
+    const rows = match.trim().split('\n')
+    if (rows.length < 2) return match
+
+    let html = '<div class="overflow-x-auto my-6"><table class="min-w-full border-collapse border border-gray-300">'
+
+    // Header row
+    const headerCells = rows[0].split('|').filter(cell => cell.trim())
+    html += '<thead class="bg-gray-100"><tr>'
+    headerCells.forEach(cell => {
+      html += `<th class="border border-gray-300 px-4 py-2 text-left font-semibold">${cell.trim()}</th>`
+    })
+    html += '</tr></thead>'
+
+    // Data rows (skip separator row at index 1)
+    html += '<tbody>'
+    for (let i = 2; i < rows.length; i++) {
+      const cells = rows[i].split('|').filter(cell => cell.trim())
+      if (cells.length === 0) continue
+
+      html += '<tr>'
+      cells.forEach(cell => {
+        html += `<td class="border border-gray-300 px-4 py-2">${cell.trim()}</td>`
+      })
+      html += '</tr>'
+    }
+    html += '</tbody></table></div>'
+
+    return html
+  })
+}
+
+function convertLists(markdown) {
+  // Numbered lists
+  markdown = markdown.replace(/(?:^|\n)(\d+\..+(?:\n\d+\..+)*)/gm, (match) => {
+    const items = match.trim().split('\n')
+    let html = '<ol class="list-decimal list-inside my-4 space-y-2">'
+    items.forEach(item => {
+      const text = item.replace(/^\d+\.\s*/, '')
+      html += `<li class="ml-4">${text}</li>`
+    })
+    html += '</ol>'
+    return html
+  })
+
+  // Bullet lists
+  markdown = markdown.replace(/(?:^|\n)([-*]\s.+(?:\n[-*]\s.+)*)/gm, (match) => {
+    const items = match.trim().split('\n')
+    let html = '<ul class="list-disc list-inside my-4 space-y-2">'
+    items.forEach(item => {
+      const text = item.replace(/^[-*]\s*/, '')
+      html += `<li class="ml-4">${text}</li>`
+    })
+    html += '</ul>'
+    return html
+  })
+
+  return markdown
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div')
+  div.textContent = text
+  return div.innerHTML
 }
 
 function addArticleSchema(post) {
