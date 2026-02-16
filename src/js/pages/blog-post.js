@@ -2,6 +2,7 @@ import { createHeader } from '../components/header.js'
 import { createFooter } from '../components/footer.js'
 import { getBlogPost } from '../config/blog-posts.js'
 import { updateMetaTags } from '../utils/seo.js'
+import { createTopBannerAd, createInArticleAd } from '../components/ad-units.js'
 
 export function createBlogPostPage(postId) {
   const post = getBlogPost(postId)
@@ -65,7 +66,18 @@ export function createBlogPostPage(postId) {
   `
 
   page.appendChild(header)
+
+  // Top banner ad after header
+  page.appendChild(createTopBannerAd())
+
   page.appendChild(article)
+
+  // In-article ad before back link
+  const inArticleAdContainer = document.createElement('div')
+  inArticleAdContainer.className = 'container mx-auto px-4 max-w-4xl'
+  inArticleAdContainer.appendChild(createInArticleAd())
+  page.appendChild(inArticleAdContainer)
+
   page.appendChild(backLink)
   page.appendChild(createFooter())
 

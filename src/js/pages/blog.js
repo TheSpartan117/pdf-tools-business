@@ -2,6 +2,7 @@ import { createHeader } from '../components/header.js'
 import { createFooter } from '../components/footer.js'
 import { getAllBlogPosts } from '../config/blog-posts.js'
 import { updateMetaTags } from '../utils/seo.js'
+import { createTopBannerAd, createInArticleAd } from '../components/ad-units.js'
 
 export function createBlogPage() {
   try {
@@ -48,7 +49,18 @@ export function createBlogPage() {
     postsContainer.appendChild(postsGrid)
 
     page.appendChild(header)
+
+    // Top banner ad after header
+    page.appendChild(createTopBannerAd())
+
     page.appendChild(postsContainer)
+
+    // Bottom ad before footer
+    const bottomAdContainer = document.createElement('div')
+    bottomAdContainer.className = 'container mx-auto px-4 mb-8'
+    bottomAdContainer.appendChild(createInArticleAd())
+    page.appendChild(bottomAdContainer)
+
     page.appendChild(createFooter())
 
     console.log('createBlogPage - page created successfully')
