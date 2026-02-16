@@ -690,7 +690,7 @@ Consider keeping separate when:
 **Our Advantage:** Free, no installation, unlimited use
 
 ### Command Line
-For technical users: `pdftk` command-line tool
+For technical users: pdftk command-line tool
 **Downside:** Steep learning curve, terminal required
 
 ### Our Free Tool
