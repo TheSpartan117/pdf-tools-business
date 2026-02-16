@@ -74,7 +74,7 @@ export function createHero() {
         <!-- CTA Button -->
         <div class="flex items-center justify-center">
           <a href="#/merge" class="inline-block px-8 py-4 text-lg font-semibold text-white rounded-lg shadow-lg transform transition-all duration-200 hover:scale-105" style="background: linear-gradient(135deg, #FF6B35 0%, #1E3A8A 100%)">
-            Get Started Free
+            Go to Tools
           </a>
         </div>
       </div>
