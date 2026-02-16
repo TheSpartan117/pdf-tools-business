@@ -609,6 +609,35 @@ async def health_check():
     """Health check for monitoring"""
     return {"status": "healthy"}
 
+@app.get("/test-ocr")
+async def test_ocr_dependencies():
+    """Test OCR dependencies are installed correctly"""
+    try:
+        # Check tesseract
+        tesseract_version = pytesseract.get_tesseract_version()
+
+        # Check available languages
+        tesseract_langs = pytesseract.get_languages()
+
+        # Check poppler (pdf2image dependency)
+        import shutil
+        poppler_installed = shutil.which('pdfinfo') is not None
+
+        return {
+            "status": "ok",
+            "tesseract_version": str(tesseract_version),
+            "available_languages": tesseract_langs,
+            "poppler_installed": poppler_installed,
+            "ocr_ready": len(tesseract_langs) > 0 and poppler_installed
+        }
+    except Exception as e:
+        logger.error(f"OCR dependency check failed: {e}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "ocr_ready": False
+        }
+
 @app.get("/privacy", response_class=HTMLResponse)
 async def privacy_policy():
     """Privacy policy endpoint - documents data handling practices"""
