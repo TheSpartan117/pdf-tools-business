@@ -9,11 +9,11 @@ export function createContactPage() {
     </div>
 
     <div class="container mx-auto px-4 py-12 max-w-4xl">
-      <h1 class="text-4xl font-bold text-gray-900 mb-8">Contact Us</h1>
+      <h1 class="text-4xl font-bold text-gray-900 mb-8">Contact PDFguruji</h1>
 
       <div class="prose prose-lg">
         <p class="text-gray-600 mb-8">
-          Have questions, feedback, or need help? We're here to assist you. Choose the best way to reach out below.
+          Have questions, feedback, or need help with our expert PDF tools? We're here to assist you. Choose the best way to reach out below.
         </p>
 
         <section class="mb-8">
@@ -63,7 +63,7 @@ export function createContactPage() {
           </p>
 
           <div class="bg-blue-50 p-6 rounded-lg mb-4">
-            <h3 class="font-semibold text-gray-900 mb-2">Is PDF Tools really free?</h3>
+            <h3 class="font-semibold text-gray-900 mb-2">Is PDFguruji really free?</h3>
             <p class="text-gray-700 text-sm">
               Yes! All our tools are 100% free with no hidden costs, subscriptions, or limits on usage.
             </p>
@@ -86,7 +86,7 @@ export function createContactPage() {
           </div>
 
           <div class="bg-blue-50 p-6 rounded-lg mb-4">
-            <h3 class="font-semibold text-gray-900 mb-2">Can I use PDF Tools for commercial purposes?</h3>
+            <h3 class="font-semibold text-gray-900 mb-2">Can I use PDFguruji for commercial purposes?</h3>
             <p class="text-gray-700 text-sm">
               Yes! You can use our tools for both personal and commercial projects without any restrictions.
             </p>
@@ -95,7 +95,7 @@ export function createContactPage() {
           <div class="bg-blue-50 p-6 rounded-lg mb-4">
             <h3 class="font-semibold text-gray-900 mb-2">Which browsers are supported?</h3>
             <p class="text-gray-700 text-sm">
-              PDF Tools works best on modern browsers including Chrome, Firefox, Safari, and Edge (latest versions).
+              PDFguruji works best on modern browsers including Chrome, Firefox, Safari, and Edge (latest versions).
             </p>
           </div>
         </section>
@@ -128,11 +128,11 @@ export function createContactPage() {
         <section class="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-lg">
           <h2 class="text-2xl font-semibold text-gray-900 mb-4">We Value Your Feedback</h2>
           <p class="text-gray-700 mb-4">
-            Your input helps us improve PDF Tools for everyone. Whether it's a suggestion, bug report, or just
+            Your input helps us improve PDFguruji for everyone. Whether it's a suggestion, bug report, or just
             a note to say hello, we appreciate hearing from you.
           </p>
           <p class="text-gray-700 font-semibold">
-            Thank you for using PDF Tools! 🙏
+            Thank you for using PDFguruji! 🙏
           </p>
         </section>
       </div>

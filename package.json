@@ -1,7 +1,7 @@
 {
-  "name": "pdf-tools-business",
+  "name": "pdfguruji",
   "version": "1.0.1",
-  "description": "",
+  "description": "PDFguruji - Your expert for free PDF tools online",
   "main": "index.js",
   "directories": {
     "doc": "docs"

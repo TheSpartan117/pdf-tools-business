@@ -9,18 +9,18 @@ export function createAboutPage() {
     </div>
 
     <div class="container mx-auto px-4 py-12 max-w-4xl">
-      <h1 class="text-4xl font-bold text-gray-900 mb-8">About PDF Tools</h1>
+      <h1 class="text-4xl font-bold text-gray-900 mb-8">About PDFguruji</h1>
 
       <div class="prose prose-lg">
         <section class="mb-8">
           <h2 class="text-2xl font-semibold text-gray-900 mb-4">Our Mission</h2>
           <p class="text-gray-700 mb-4">
-            PDF Tools was created with a simple mission: to provide free, secure, and easy-to-use PDF manipulation tools
-            for everyone. Whether you're a student, professional, or business owner, working with PDFs should be simple and accessible.
+            PDFguruji was created with a simple mission: to provide expert PDF tools that are free, secure, and easy-to-use
+            for everyone. Like a trusted teacher, we guide you through every PDF task with professional tools and clear instructions.
           </p>
           <p class="text-gray-700 mb-4">
-            We believe that essential digital tools shouldn't come with expensive subscriptions or complicated software installations.
-            That's why we've built a comprehensive suite of PDF tools that work directly in your browser, with no sign-ups or downloads required.
+            We believe that powerful PDF tools should be accessible to everyone - students, professionals, and businesses alike.
+            That's why PDFguruji works directly in your browser, with no sign-ups, no downloads, and complete privacy.
           </p>
         </section>
 

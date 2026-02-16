@@ -9,7 +9,7 @@ export function createBlogPage() {
     console.log('createBlogPage - starting')
     // Update meta tags for blog page
     updateMetaTags('home')
-    document.title = 'Blog - Free PDF Tools Tips & Guides'
+    document.title = 'Blog - PDFguruji'
 
     const page = document.createElement('div')
     page.className = 'min-h-screen bg-gray-50'
@@ -22,9 +22,9 @@ export function createBlogPage() {
     header.className = 'bg-white shadow-sm py-12'
     header.innerHTML = `
       <div class="container mx-auto px-4">
-        <h1 class="text-4xl font-bold text-gray-900 text-center mb-4">PDF Tools Blog</h1>
+        <h1 class="text-4xl font-bold text-gray-900 text-center mb-4">PDFguruji Blog</h1>
         <p class="text-xl text-gray-600 text-center max-w-2xl mx-auto">
-          Tips, guides, and tutorials for working with PDF files more efficiently
+          Expert tips, guides, and tutorials for mastering your PDF workflow
         </p>
       </div>
     `

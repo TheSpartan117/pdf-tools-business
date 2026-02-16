@@ -1,29 +1,23 @@
-# PDF Tools Business
+# PDFguruji
 
-A free, privacy-focused web application for essential PDF operations. All processing happens in your browser - no uploads, no server storage, complete privacy.
+**Your PDF Expert** - Free online PDF tools for everyone.
+
+Professional PDF tools that work directly in your browser. Merge, split, compress, convert, and edit PDFs securely with no sign-ups required.
 
 ## Features
 
-### PDF Tools
-- **Merge PDFs**: Combine multiple PDF files into a single document
-- **Split PDF**: Extract specific pages or split into individual pages
-- **Compress PDF**: Reduce file size while maintaining quality
-- **PDF to Images**: Convert PDF pages to PNG/JPEG images
-
-### Key Benefits
-- 100% client-side processing - your files never leave your device
-- No registration required
-- Free to use
-- Works offline (after initial load)
-- Mobile-friendly responsive design
+- 🔄 **Convert & Transform** - PDF to Word, Word to PDF, Images to PDF
+- 📄 **Organize & Edit** - Merge, split, rotate, extract pages
+- 🗜️ **Optimize** - Compress PDFs while maintaining quality
+- 📝 **Extract** - OCR text extraction from scanned documents
+- 🔒 **100% Secure** - All processing happens in your browser
+- 🌐 **No Sign-up** - Use all tools instantly, no account needed
 
 ## Tech Stack
 
-- **Frontend Framework**: Vanilla JavaScript (ES6+)
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS
-- **PDF Processing**: pdf-lib, pdfjs-dist
-- **Deployment**: Netlify
+- **Frontend:** Vanilla JavaScript, Tailwind CSS
+- **Backend:** Python FastAPI
+- **Processing:** PDF.js, pdf-lib, Tesseract OCR
 
 ## Local Development
 

@@ -14,7 +14,7 @@ export function createBlogPostPage(postId) {
   }
 
   // Update meta tags for this specific post
-  document.title = `${post.title} | PDF Tools Blog`
+  document.title = `${post.title} | PDFguruji Blog`
   const metaDescription = document.querySelector('meta[name="description"]')
   if (metaDescription) {
     metaDescription.setAttribute('content', post.excerpt)

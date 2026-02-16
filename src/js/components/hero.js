@@ -73,13 +73,9 @@ export function createHero() {
 
         <!-- CTA Button -->
         <div class="flex items-center justify-center">
-          <button onclick="document.getElementById('tool-grid')?.scrollIntoView({behavior: 'smooth', block: 'start'})"
-                  class="group bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-8 py-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-2">
-            <span>Choose Your Tool</span>
-            <svg class="h-5 w-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-            </svg>
-          </button>
+          <a href="#/merge" class="inline-block px-8 py-4 text-lg font-semibold text-white rounded-lg shadow-lg transform transition-all duration-200 hover:scale-105" style="background: linear-gradient(135deg, #FF6B35 0%, #1E3A8A 100%)">
+            Get Started Free
+          </a>
         </div>
       </div>
     </div>
