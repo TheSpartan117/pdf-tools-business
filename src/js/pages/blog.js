@@ -4,7 +4,7 @@ import { getAllBlogPosts } from '../config/blog-posts.js'
 import { updateMetaTags } from '../utils/seo.js'
 
 export function createBlogPage() {
-  // Update meta tags
+  // Update meta tags for blog page
   updateMetaTags('home')
   document.title = 'Blog - Free PDF Tools Tips & Guides'
 

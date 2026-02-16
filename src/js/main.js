@@ -195,11 +195,23 @@ function showTermsPage() {
 }
 
 function showBlogPage() {
-  removeToolSchema()
-  removeFAQSchema()
-  const app = document.getElementById('app')
-  app.innerHTML = ''
-  app.appendChild(createBlogPage())
+  try {
+    console.log('showBlogPage called')
+    removeToolSchema()
+    removeFAQSchema()
+    const app = document.getElementById('app')
+    if (!app) {
+      console.error('App element not found')
+      return
+    }
+    app.innerHTML = ''
+    const blogPage = createBlogPage()
+    console.log('Blog page created:', blogPage)
+    app.appendChild(blogPage)
+    console.log('Blog page appended successfully')
+  } catch (error) {
+    console.error('Error in showBlogPage:', error)
+  }
 }
 
 function showBlogPostPage(postId) {
