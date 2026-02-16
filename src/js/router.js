@@ -21,7 +21,11 @@ export function initRouter(routeHandlers) {
 }
 
 function handleRouteChange() {
-  const hash = window.location.hash.slice(1) || 'home'
+  let hash = window.location.hash.slice(1) || 'home'
+  // Remove leading slash if present
+  if (hash.startsWith('/')) {
+    hash = hash.slice(1)
+  }
   console.log('Router handleRouteChange - hash:', hash)
   const [route, ...params] = hash.split('/')
   console.log('Router - route:', route, 'params:', params)
