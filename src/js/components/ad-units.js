@@ -7,12 +7,22 @@ export function createTopBannerAd() {
   const ad = document.createElement('div')
   ad.className = 'container mx-auto px-4 py-4'
   ad.innerHTML = `
-    <!-- AdSense Top Banner (728x90) -->
-    <div class="flex justify-center">
-      <ins class="adsbygoogle"
-           style="display:inline-block;width:728px;height:90px"
-           data-ad-client="ca-pub-5124725611632243"
-           data-ad-slot="XXXXXXXXXX"></ins>
+    <div class="bg-gray-100 border border-gray-300 rounded p-4">
+      <p class="text-xs text-gray-500 text-center mb-2">Advertisement</p>
+      <!-- AdSense Top Banner (728x90) -->
+      <div class="flex justify-center">
+        <ins class="adsbygoogle"
+             style="display:inline-block;width:728px;height:90px"
+             data-ad-client="ca-pub-5124725611632243"
+             data-ad-slot="XXXXXXXXXX"></ins>
+      </div>
+      <!-- Placeholder visible until AdSense approved -->
+      <div class="bg-white border-2 border-dashed border-gray-300 rounded flex items-center justify-center" style="height:90px;max-width:728px;margin:0 auto;">
+        <div class="text-gray-400 text-center">
+          <p class="font-medium">728x90 Banner Ad</p>
+          <p class="text-xs">Google AdSense - Pending Approval</p>
+        </div>
+      </div>
     </div>
   `
   return ad
@@ -38,13 +48,23 @@ export function createInArticleAd() {
   const ad = document.createElement('div')
   ad.className = 'my-8'
   ad.innerHTML = `
-    <!-- AdSense In-Article (Responsive) -->
-    <ins class="adsbygoogle"
-         style="display:block; text-align:center;"
-         data-ad-layout="in-article"
-         data-ad-format="fluid"
-         data-ad-client="ca-pub-5124725611632243"
-         data-ad-slot="XXXXXXXXXX"></ins>
+    <div class="bg-gray-100 border border-gray-300 rounded p-4">
+      <p class="text-xs text-gray-500 text-center mb-2">Advertisement</p>
+      <!-- AdSense In-Article (Responsive) -->
+      <ins class="adsbygoogle"
+           style="display:block; text-align:center;"
+           data-ad-layout="in-article"
+           data-ad-format="fluid"
+           data-ad-client="ca-pub-5124725611632243"
+           data-ad-slot="XXXXXXXXXX"></ins>
+      <!-- Placeholder visible until AdSense approved -->
+      <div class="bg-white border-2 border-dashed border-gray-300 rounded flex items-center justify-center py-12">
+        <div class="text-gray-400 text-center">
+          <p class="font-medium">Responsive In-Article Ad</p>
+          <p class="text-xs">Google AdSense - Pending Approval</p>
+        </div>
+      </div>
+    </div>
   `
   return ad
 }
